@@ -35,6 +35,7 @@ public class MainWindow {
     private final TeacherTab teacherTab = new TeacherTab();
     private final StudentsTab studentTab = new StudentsTab();
     private final GroupTab groupTab = new GroupTab();
+    private final PaymentTab paymentTab = new PaymentTab();
 
     public MainWindow(UserDTO user) {
         this.user = user;
@@ -80,17 +81,19 @@ public class MainWindow {
         VBox teachersBox = teacherTab.createTeachersTable();
         VBox studentsBox = studentTab.createStudentsTable();
         VBox groupBox = groupTab.createGroupsTable();
+        VBox paymentBox = paymentTab.createPaymentsTable();
 
         Tab scheduleTab = new Tab("Расписание", scheduleBox);
         Tab studentsTab = new Tab("Студенты", studentsBox);
         Tab groupsTab = new Tab("Группы", groupBox);
         Tab teachersTab = new Tab("Учителя", teachersBox);
+        Tab paymentTab = new Tab("Платежи", paymentBox);
 
         Tab languagesTab = new Tab("Языки", languagesBox);
         Tab levelsTab = new Tab("Уровни языка", levelsBox);
-        Tab spacer = createInvisibleTabSpacer(380);
+        Tab spacer = createInvisibleTabSpacer(320);
         Tab usersTab = new Tab("Пользователи", usersBox);
-        tabs.getTabs().addAll(scheduleTab, groupsTab, teachersTab, studentsTab, spacer, languagesTab, levelsTab, usersTab);
+        tabs.getTabs().addAll(scheduleTab, groupsTab, teachersTab, studentsTab, paymentTab, spacer, languagesTab, levelsTab, usersTab);
 
         // ====== Layout ======
         BorderPane root = new BorderPane();
