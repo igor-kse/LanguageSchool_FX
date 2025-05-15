@@ -2,6 +2,7 @@ package by.poskorbko.languageschool_fx.http;
 
 import by.poskorbko.languageschool_fx.AppConfig;
 import by.poskorbko.languageschool_fx.AuthService;
+import by.poskorbko.languageschool_fx.dto.UserDTO;
 import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
 
 import java.net.URI;
@@ -21,7 +22,8 @@ public class CrudRestClient {
                 System.out.println("Get call: " + path);
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(serverUrl + path))
-                        .header("Accept", "application/json");
+                        .header("Accept", "application/json")
+                        .header("SESSIONID", AuthService.getSessionCookie());
                 addSessionCookie(requestBuilder);
 
                 HttpResponse<String> response = client.send(requestBuilder.GET().build(), HttpResponse.BodyHandlers.ofString());
@@ -43,7 +45,8 @@ public class CrudRestClient {
                 String json = JsonObjectMapper.getInstance().writeValueAsString(toJson);
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(serverUrl + path))
-                        .header("Content-Type", "application/json");
+                        .header("Content-Type", "application/json")
+                        .header("SESSIONID", AuthService.getSessionCookie());
                 addSessionCookie(requestBuilder);
 
                 var bodyPublisher = HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8);
@@ -68,7 +71,8 @@ public class CrudRestClient {
                 String json = JsonObjectMapper.getInstance().writeValueAsString(toJson);
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(serverUrl + path))
-                        .header("Content-Type", "application/json");
+                        .header("Content-Type", "application/json")
+                        .header("SESSIONID", AuthService.getSessionCookie());
                 addSessionCookie(requestBuilder);
                 var bodyPublisher = HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8);
                 var request = requestBuilder.method("PATCH", bodyPublisher).build();
@@ -91,7 +95,8 @@ public class CrudRestClient {
                 String json = JsonObjectMapper.getInstance().writeValueAsString(toJson);
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(serverUrl + path))
-                        .header("Content-Type", "application/json");
+                        .header("Content-Type", "application/json")
+                        .header("SESSIONID", AuthService.getSessionCookie());
                 addSessionCookie(requestBuilder);
 
                 var bodyPublisher = HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8);
@@ -114,7 +119,8 @@ public class CrudRestClient {
             try {
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(serverUrl + path))
-                        .header("Accept", "application/json");
+                        .header("Accept", "application/json")
+                        .header("SESSIONID", AuthService.getSessionCookie());
                 addSessionCookie(requestBuilder);
 
                 var request = requestBuilder.DELETE().build();

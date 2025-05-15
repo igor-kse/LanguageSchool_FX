@@ -16,7 +16,7 @@ public class AuthService {
     private final HttpClient client = HttpClient.newHttpClient();
     private final ResourceBundle bundle = ResourceBundle.getBundle("messages");
 
-    private static String sessionCookie = "123";
+    private static String sessionCookie = "";
     private static AuthResponse lastAuthResponse;
 
     public AuthService() {
@@ -40,7 +40,7 @@ public class AuthService {
                    boolean ok = response.statusCode() == 200;
 
                    if (ok) {
-                       response.headers().firstValue("SESSIONID").ifPresent(cookie -> sessionCookie = cookie);
+                       response.headers().firstValue("set-cookie").ifPresent(s -> sessionCookie = s.split(";")[0].split("=")[1]);
                        UserDTO user = JsonObjectMapper.getInstance().readValue(response.body(), UserDTO.class);
                        lastAuthResponse = new AuthResponse(null, user);
                        Platform.runLater(() -> onResult.accept(true, lastAuthResponse));
