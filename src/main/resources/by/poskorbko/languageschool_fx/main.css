@@ -1,0 +1,14 @@
+.tab-spacer-invisible .tab-label {
+    -fx-padding: 0 0 0 0;
+    -fx-background-color: transparent;
+}
+.tab-spacer-invisible .tab-container {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+}
+.tab-spacer-invisible {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+}

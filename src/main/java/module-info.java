@@ -15,4 +15,6 @@ module by.poskorbko.languageschool_fx {
 
     opens by.poskorbko.languageschool_fx to javafx.fxml;
     exports by.poskorbko.languageschool_fx;
+    exports by.poskorbko.languageschool_fx.tabs;
+    opens by.poskorbko.languageschool_fx.tabs to javafx.fxml;
 }

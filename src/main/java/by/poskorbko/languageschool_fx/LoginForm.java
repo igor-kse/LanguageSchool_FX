@@ -141,7 +141,7 @@ public class LoginForm extends Application {
         pane.setStyle("-fx-background-color: linear-gradient(to bottom, #e9f0ff, #e6e6e6);");
 
         Scene scene = new Scene(pane);
-        String style = Objects.requireNonNull(getClass().getResource("loginform.css")).toExternalForm();
+        String style = Objects.requireNonNull(getClass().getResource("login.css")).toExternalForm();
         scene.getStylesheets().add(style);
         return scene;
     }
