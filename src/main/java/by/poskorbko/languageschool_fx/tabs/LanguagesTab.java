@@ -2,7 +2,7 @@ package by.poskorbko.languageschool_fx.tabs;
 
 import by.poskorbko.languageschool_fx.TestData;
 import by.poskorbko.languageschool_fx.dto.LanguageEntryDTO;
-import javafx.application.Platform;
+import by.poskorbko.languageschool_fx.dto.LevelScaleDTO;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,9 +12,13 @@ import javafx.scene.layout.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class LanguagesTab extends BaseTab {
+public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
 
-    public static VBox createLanguagesTable(List<LanguageEntryDTO> entries, List<String> availableScales) {
+    public LanguagesTab() {
+        super("/languages");
+    }
+
+    public VBox createLanguagesTable(List<LanguageEntryDTO> entries) {
         TableView<LanguageEntryDTO> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
@@ -34,15 +38,15 @@ public class LanguagesTab extends BaseTab {
         Button addBtn = new Button("Добавить");
         addBtn.setStyle("-fx-background-color: #39d353; -fx-text-fill: #333; -fx-background-radius: 8;");
         addBtn.setOnAction(e -> {
-            showLanguageEditDialog(null, availableScales, newEntry -> {
+            showEditDialog(null, newEntry -> {
                 table.getItems().add(newEntry);
-                restAddLanguageEntry(newEntry,
-                        () -> { /* showSnackbar("Добавлено!"); */ },
-                        () -> {
-                            table.getItems().remove(newEntry);
-                            showAlert("Ошибка", "Не удалось добавить язык. Данные не изменены.");
-                        }
-                );
+//                restAddCall(newEntry,
+//                        () -> { /* showSnackbar("Добавлено!"); */ },
+//                        () -> {
+//                            table.getItems().remove(newEntry);
+//                            showAlert("Ошибка", "Не удалось добавить язык. Данные не изменены.");
+//                        }
+//                );
             });
         });
 
@@ -53,16 +57,16 @@ public class LanguagesTab extends BaseTab {
             LanguageEntryDTO selected = table.getSelectionModel().getSelectedItem();
             int selectedIdx = table.getSelectionModel().getSelectedIndex();
             if (selected != null) {
-                showLanguageEditDialog(selected, availableScales, updated -> {
+                showEditDialog(selected, updated -> {
                     LanguageEntryDTO old = table.getItems().get(selectedIdx);
                     table.getItems().set(selectedIdx, updated);
-                    restUpdateLanguageEntry(updated,
-                            () -> { /* showSnackbar("Изменено!"); */ },
-                            () -> {
-                                table.getItems().set(selectedIdx, old);
-                                showAlert("Ошибка", "Не удалось сохранить изменения. Данные не изменены.");
-                            }
-                    );
+//                    restUpdateCall(updated,
+//                            () -> { /* showSnackbar("Изменено!"); */ },
+//                            () -> {
+//                                table.getItems().set(selectedIdx, old);
+//                                showAlert("Ошибка", "Не удалось сохранить изменения. Данные не изменены.");
+//                            }
+//                    );
                 });
             }
         });
@@ -79,13 +83,13 @@ public class LanguagesTab extends BaseTab {
                     if (btn == ButtonType.YES) {
                         int oldIndex = table.getItems().indexOf(selected);
                         table.getItems().remove(selected);
-                        restDeleteLanguageEntry(selected,
-                                () -> { /* showSnackbar("Удалено!"); */ },
-                                () -> {
-                                    table.getItems().add(oldIndex, selected);
-                                    showAlert("Ошибка", "Не удалось удалить. Данные не изменены.");
-                                }
-                        );
+//                        restDeleteCall(selected,
+//                                () -> { /* showSnackbar("Удалено!"); */ },
+//                                () -> {
+//                                    table.getItems().add(oldIndex, selected);
+//                                    showAlert("Ошибка", "Не удалось удалить. Данные не изменены.");
+//                                }
+//                        );
                     }
                 });
             }
@@ -112,10 +116,13 @@ public class LanguagesTab extends BaseTab {
         return vbox;
     }
 
-    private static void showLanguageEditDialog(LanguageEntryDTO entry, List<String> availableScales, Consumer<LanguageEntryDTO> onSave) {
+    protected void showEditDialog(LanguageEntryDTO entry,  Consumer<LanguageEntryDTO> onSave) {
         boolean isNew = (entry == null);
         Dialog<LanguageEntryDTO> dialog = new Dialog<>();
         dialog.setTitle(isNew ? "Добавить язык" : "Редактировать язык");
+
+        //FIXME
+        var availableScales = TestData.getTestLevelScale().stream().map(LevelScaleDTO::name).toList();
 
         TextField langField = new TextField(isNew ? "" : entry.language());
         ComboBox<String> scaleBox = new ComboBox<>();
@@ -149,26 +156,4 @@ public class LanguagesTab extends BaseTab {
 
         dialog.showAndWait().ifPresent(onSave);
     }
-
-    private static void restAddLanguageEntry(LanguageEntryDTO entry, Runnable onSuccess, Runnable onFail) {
-        new Thread(() -> {
-            try { Thread.sleep(300); Platform.runLater(onSuccess); }
-            catch (Exception e) { Platform.runLater(onFail); }
-        }).start();
-    }
-
-    private static void restUpdateLanguageEntry(LanguageEntryDTO entry, Runnable onSuccess, Runnable onFail) {
-        new Thread(() -> {
-            try { Thread.sleep(300); Platform.runLater(onSuccess); }
-            catch (Exception e) { Platform.runLater(onFail); }
-        }).start();
-    }
-
-    private static void restDeleteLanguageEntry(LanguageEntryDTO entry, Runnable onSuccess, Runnable onFail) {
-        new Thread(() -> {
-            try { Thread.sleep(300); Platform.runLater(onSuccess); }
-            catch (Exception e) { Platform.runLater(onFail); }
-        }).start();
-    }
-
 }

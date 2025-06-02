@@ -1,22 +1,26 @@
 package by.poskorbko.languageschool_fx.tabs;
 
-import by.poskorbko.languageschool_fx.TestData;
 import by.poskorbko.languageschool_fx.dto.LevelScaleDTO;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-public class LanguageLevelTab extends BaseTab {
+public class LanguageLevelTab extends BaseTab<LevelScaleDTO> {
 
-    public static VBox createLevelsTable(List<LevelScaleDTO> scales)  {
-        TableView<LevelScaleDTO> table = new TableView<>();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    public LanguageLevelTab() {
+        super("/languages/levels");
+    }
+
+    public VBox createLevelsTable(List<LevelScaleDTO> scales) {
+        TableView<LevelScaleDTO> table = getTable();
 
         TableColumn<LevelScaleDTO, String> scaleCol = new TableColumn<>("Шкала");
         scaleCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().name()));
@@ -47,91 +51,14 @@ public class LanguageLevelTab extends BaseTab {
         table.getColumns().addAll(scaleCol, levelsCol);
         table.getItems().addAll(scales);
 
-        // ==== КНОПКИ ====
-        Button addBtn = new Button("Добавить");
-        addBtn.setStyle("-fx-background-color: #39d353; -fx-text-fill: #333; -fx-background-radius: 8;");
-        addBtn.setOnAction(e -> {
-            showLevelEditDialog(null, newScale -> {
-                table.getItems().add(newScale);
-                restAddLevelScale(newScale,
-                        () -> { /* showSnackbar("Добавлено!"); */ },
-                        () -> {
-                            table.getItems().remove(newScale);
-                            showAlert("Ошибка", "Не удалось добавить шкалу. Данные не изменены.");
-                        }
-                );
-            });
-        });
-
-        Button editBtn = new Button("Редактировать");
-        editBtn.setStyle("-fx-background-color: #ffd43b; -fx-text-fill: #333; -fx-background-radius: 8;");
-        editBtn.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
-        editBtn.setOnAction(e -> {
-            LevelScaleDTO selected = table.getSelectionModel().getSelectedItem();
-            int selectedIdx = table.getSelectionModel().getSelectedIndex();
-            if (selected != null) {
-                showLevelEditDialog(selected, updated -> {
-                    LevelScaleDTO old = table.getItems().get(selectedIdx);
-                    table.getItems().set(selectedIdx, updated);
-                    restUpdateLevelScale(updated,
-                            () -> { /* showSnackbar("Изменено!"); */ },
-                            () -> {
-                                table.getItems().set(selectedIdx, old);
-                                showAlert("Ошибка", "Не удалось сохранить изменения. Данные не изменены.");
-                            }
-                    );
-                });
-            }
-        });
-
-        Button deleteBtn = new Button("Удалить");
-        deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: #333; -fx-background-radius: 8;");
-        deleteBtn.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
-        deleteBtn.setOnAction(e -> {
-            LevelScaleDTO selected = table.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Удалить выбранную шкалу?", ButtonType.YES, ButtonType.NO);
-                confirm.setHeaderText("Подтверждение удаления");
-                confirm.showAndWait().ifPresent(btn -> {
-                    if (btn == ButtonType.YES) {
-                        int oldIndex = table.getItems().indexOf(selected);
-                        table.getItems().remove(selected);
-                        restDeleteLevelScale(selected,
-                                () -> { /* showSnackbar("Удалено!"); */ },
-                                () -> {
-                                    table.getItems().add(oldIndex, selected);
-                                    showAlert("Ошибка", "Не удалось удалить. Данные не изменены.");
-                                }
-                        );
-                    }
-                });
-            }
-        });
-
-        Button refreshBtn = new Button("Обновить");
-        refreshBtn.setStyle("-fx-background-color: #36a3f7; -fx-text-fill: white; -fx-background-radius: 8;");
-        refreshBtn.setOnAction(e -> {
-            // FIXME
-            // Здесь — обновление с бэка (пока просто имитация)
-            List<LevelScaleDTO> updatedScales = TestData.getTestLevelScale();
-            table.getItems().setAll(updatedScales);
-            // showSnackbar("Обновлено!");
-        });
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox buttons = new HBox(10, addBtn, editBtn, deleteBtn, spacer, refreshBtn);
-        buttons.setAlignment(Pos.CENTER_LEFT);
-        buttons.setPadding(new Insets(0, 0, 10, 0));
-
-        VBox vbox = new VBox(8, buttons, table);
+        VBox vbox = new VBox(8, getButtons(), table);
         VBox.setVgrow(table, Priority.ALWAYS);
         vbox.setPadding(new Insets(10));
         return vbox;
     }
 
-    private static void showLevelEditDialog(LevelScaleDTO scale, Consumer<LevelScaleDTO> onSave) {
+    @Override
+    protected void showEditDialog(LevelScaleDTO scale, Consumer<LevelScaleDTO> onSave) {
         boolean isNew = (scale == null);
         Dialog<LevelScaleDTO> dialog = new Dialog<>();
         dialog.setTitle(isNew ? "Добавить шкалу" : "Редактировать шкалу");
@@ -202,8 +129,10 @@ public class LanguageLevelTab extends BaseTab {
         grid.setHgap(12);
         grid.setVgap(8);
         grid.setPadding(new Insets(24));
-        grid.add(new Label("Название шкалы:"), 0, 0); grid.add(nameField, 1, 0);
-        grid.add(new Label("Уровни:"), 0, 1); grid.add(levelsBox, 1, 1);
+        grid.add(new Label("Название шкалы:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Уровни:"), 0, 1);
+        grid.add(levelsBox, 1, 1);
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -221,26 +150,5 @@ public class LanguageLevelTab extends BaseTab {
         });
 
         dialog.showAndWait().ifPresent(onSave);
-    }
-
-    private static void restAddLevelScale(LevelScaleDTO scale, Runnable onSuccess, Runnable onFail) {
-        new Thread(() -> {
-            try { Thread.sleep(300); Platform.runLater(onSuccess); }
-            catch (Exception e) { Platform.runLater(onFail); }
-        }).start();
-    }
-
-    private static void restUpdateLevelScale(LevelScaleDTO scale, Runnable onSuccess, Runnable onFail) {
-        new Thread(() -> {
-            try { Thread.sleep(300); Platform.runLater(onSuccess); }
-            catch (Exception e) { Platform.runLater(onFail); }
-        }).start();
-    }
-
-    private static void restDeleteLevelScale(LevelScaleDTO scale, Runnable onSuccess, Runnable onFail) {
-        new Thread(() -> {
-            try { Thread.sleep(300); Platform.runLater(onSuccess); }
-            catch (Exception e) { Platform.runLater(onFail); }
-        }).start();
     }
 }

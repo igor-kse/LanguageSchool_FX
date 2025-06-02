@@ -1,5 +1,6 @@
 package by.poskorbko.languageschool_fx;
 
+import by.poskorbko.languageschool_fx.dto.UserDTO;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -77,30 +78,23 @@ public class LoginForm extends Application {
         loginButton.setDisable(true);
         loginSpinner.setVisible(true);
 
-        new Thread(() -> {
-            try {
-                boolean ok = authService.login(email, password);
-                Platform.runLater(() -> {
-                    loginSpinner.setVisible(false);
-                    loginButton.setDisable(false);
-                    if (ok) {
-                        showMainWindow(primaryStage);
-                    } else {
-                        showError(loginFormBox, errorLabel, bundle.getString("login.fail"));
-                    }
-                });
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    loginSpinner.setVisible(false);
-                    loginButton.setDisable(false);
-                    showError(loginFormBox, errorLabel, bundle.getString("error.server.connect"));
-                });
+        authService.loginAsync(email, password, (ok, authResponse) -> {
+            loginSpinner.setVisible(false);
+            loginButton.setDisable(false);
+            if (ok) {
+                showMainWindow(primaryStage, authResponse.user());
+            } else {
+                String authMessage = authResponse.message();
+                String message = (authMessage != null && !authMessage.isBlank())
+                        ? authMessage
+                        : bundle.getString("error.invalid.credentials");
+                showError(loginFormBox, errorLabel, message);
             }
-        }).start();
+        });
     }
 
-    private void showMainWindow(Stage stage) {
-        MainWindow mainWindow = new MainWindow();
+    private void showMainWindow(Stage stage, UserDTO user) {
+        MainWindow mainWindow = new MainWindow(user);
         mainWindow.show(stage, () -> {
             // По логауту возвращаем окно авторизации
             try {

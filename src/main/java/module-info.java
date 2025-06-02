@@ -12,9 +12,16 @@ module by.poskorbko.languageschool_fx {
     requires com.almasb.fxgl.all;
     requires java.net.http;
     requires annotations;
+    requires com.fasterxml.jackson.datatype.jsr310;
+    requires com.fasterxml.jackson.databind;
+    requires javafx.swing;
+    requires jdk.httpserver;
 
     opens by.poskorbko.languageschool_fx to javafx.fxml;
     exports by.poskorbko.languageschool_fx;
     exports by.poskorbko.languageschool_fx.tabs;
+    exports by.poskorbko.languageschool_fx.dto;
     opens by.poskorbko.languageschool_fx.tabs to javafx.fxml;
+    opens by.poskorbko.languageschool_fx.dto to com.fasterxml.jackson.databind;
+    exports by.poskorbko.languageschool_fx.util;
 }

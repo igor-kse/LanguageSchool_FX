@@ -1,9 +1,8 @@
 package by.poskorbko.languageschool_fx;
 
-import by.poskorbko.languageschool_fx.dto.LevelScaleDTO;
-import by.poskorbko.languageschool_fx.tabs.LanguageLevelTab;
-import by.poskorbko.languageschool_fx.tabs.LanguagesTab;
-import by.poskorbko.languageschool_fx.tabs.ScheduleTab;
+import by.poskorbko.languageschool_fx.dto.Role;
+import by.poskorbko.languageschool_fx.dto.UserDTO;
+import by.poskorbko.languageschool_fx.tabs.*;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,33 +13,33 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayInputStream;
 import java.net.URL;
-import java.util.Objects;
-import java.util.ResourceBundle;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class MainWindow {
     private final ResourceBundle bundle = ResourceBundle.getBundle("messages");
 
     private Timer inactivityTimer;
+    private final UserDTO user;
     private final int timeoutMinutes = AppConfig.getInt("session.timeout.seconds");
+    private final LanguageLevelTab languageLevelTab = new LanguageLevelTab();
+    private final LanguagesTab languagesTab = new LanguagesTab();
+    private final ScheduleTab scheduleTab = new ScheduleTab();
+    private final UsersTab usersTab = new UsersTab();
+
+    public MainWindow(UserDTO user) {
+        this.user = user;
+    }
 
     public void show(Stage stage, Runnable onLogout) {
-        // FIXME получить с бэка
-        String userName = "Иван Иванов";
-        String userRole = "Администратор";
-        String avatarPath = "avatar.png"; // Положи png-аватар в ресурсы или используй дефолт
-
-        ImageView logo = createLogo();
-        VBox userInfo = createUserInfo(userName, userRole);
-        ImageView avatarView = createAvatar(avatarPath);
+        String roleName = resolveUserRoleName(user.roles().toString());
+        VBox userInfo = createUserInfo(user.firstName() + " " + user.lastName(), roleName);
+        ImageView avatarView = createAvatar(user.avatarBase64());
 
         // ====== Кнопка выхода ======
         Button logoutBtn = new Button(bundle.getString("logout.button"));
@@ -59,6 +58,7 @@ public class MainWindow {
         );
 
         // ====== Шапка ======
+        ImageView logo = createLogo();
         HBox header = new HBox(14, logo, userInfo, new Region(), avatarView, menuBtn, logoutBtn);
         HBox.setHgrow(header.getChildren().get(2), Priority.ALWAYS); // Spacer
         header.setAlignment(Pos.CENTER_LEFT);
@@ -70,9 +70,10 @@ public class MainWindow {
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
         // FIXME
-        VBox scheduleBox = ScheduleTab.createScheduleTable(TestData.getTestSchedule());
-        VBox levelsBox = LanguageLevelTab.createLevelsTable(TestData.getTestLevelScale());
-        VBox languagesBox = LanguagesTab.createLanguagesTable(TestData.getTestLanguageEntries(), TestData.getTestLevelScale().stream().map(LevelScaleDTO::name).toList());
+        VBox scheduleBox = scheduleTab.createScheduleTable(TestData.getTestSchedule());
+        VBox levelsBox = languageLevelTab.createLevelsTable(TestData.getTestLevelScale());
+        VBox languagesBox = languagesTab.createLanguagesTable(TestData.getTestLanguageEntries());
+        VBox usersBox = usersTab.createUsersTable();
 
         // TODO проверить
         // Можно добавить заголовок:
@@ -81,13 +82,14 @@ public class MainWindow {
         // scheduleBox.getChildren().add(0, scheduleLabel);
 
         Tab scheduleTab = new Tab("Расписание", scheduleBox);
-        Tab studentsTab = new Tab("Студенты", createPlaceholderContent("Студенты"));
-        Tab groupsTab = new Tab("Группы", createPlaceholderContent("Группы"));
+        Tab studentsTab = new Tab("Студенты", BaseTab.createPlaceholderContent("Студенты"));
+        Tab groupsTab = new Tab("Группы", BaseTab.createPlaceholderContent("Группы"));
 
         Tab languagesTab = new Tab("Языки", languagesBox);
         Tab levelsTab = new Tab("Уровни языка", levelsBox);
-        Tab spacer = createInvisibleTabSpacer(500);
-        tabs.getTabs().addAll(scheduleTab, studentsTab, groupsTab, spacer, languagesTab, levelsTab);
+        Tab spacer = createInvisibleTabSpacer(400);
+        Tab usersTab = new Tab("Пользователи", usersBox);
+        tabs.getTabs().addAll(scheduleTab, studentsTab, groupsTab, spacer, languagesTab, levelsTab, usersTab);
 
         // ====== Layout ======
         BorderPane root = new BorderPane();
@@ -111,15 +113,29 @@ public class MainWindow {
         restartTimer(stage, onLogout);
     }
 
-    private @NotNull ImageView createAvatar(String avatarPath) {
-        ImageView avatarView;
-        try {
-            avatarView = new ImageView(new Image(Objects.requireNonNull(getClass().getResource(avatarPath)).toExternalForm(), 36, 36, true, true));
-        } catch (Exception e) {
-            avatarView = new ImageView(); // fallback если нет файла
+    private String resolveUserRoleName(String stringRoles) {
+        String[] roles = stringRoles.substring(1, stringRoles.length() - 1).split(",");
+        Set<Role> roleSet = new HashSet<>();
+        for(String role : roles) {
+            roleSet.add(Role.valueOf(role.trim()));
         }
-        avatarView.setClip(new Circle(18, 18, 18));
-        return avatarView;
+        return Role.getStrongest(roleSet).getName();
+    }
+
+    private @NotNull ImageView createAvatar(String base64) {
+        Image image;
+        if (base64 == null || base64.isEmpty()) {
+            image = new Image(Objects.requireNonNull(getClass().getResource("no_avatar.png"))
+                    .toExternalForm(), 36, 36, true, true);
+        } else {
+            byte[] bytes = Base64.getDecoder().decode(base64);
+            image = new Image(new ByteArrayInputStream(bytes), 36, 36, true, true);
+        }
+        ImageView avatar = new ImageView(image);
+        avatar.setFitWidth(36);
+        avatar.setFitHeight(36);
+        avatar.setClip(new Circle(18, 18, 18));
+        return avatar;
     }
 
     private static @NotNull VBox createUserInfo(String userName, String userRole) {
@@ -152,16 +168,6 @@ public class MainWindow {
         }, timeoutMinutes * 1000L);
     }
 
-    // === Заглушка для вкладок ===
-    private VBox createPlaceholderContent(String title) {
-        Label label = new Label(title + " — здесь будет содержимое");
-        label.setFont(Font.font("Arial", 18));
-        label.setTextFill(Color.web("#888"));
-        VBox box = new VBox(label);
-        box.setAlignment(Pos.TOP_CENTER);
-        box.setPadding(new Insets(32));
-        return box;
-    }
 
     public static Tab createInvisibleTabSpacer(int widthPx) {
         Tab spacer = new Tab();
