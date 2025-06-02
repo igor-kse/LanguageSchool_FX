@@ -1,6 +1,10 @@
 package by.poskorbko.languageschool_fx.tabs;
 
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
+import by.poskorbko.languageschool_fx.util.Utils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -76,10 +80,11 @@ public abstract class BaseTab<T> {
                 confirm.showAndWait().ifPresent(btn -> {
                     if (btn == ButtonType.YES) {
                         int oldIndex = table.getItems().indexOf(selected);
+                        String id = getSelectedUuid(oldIndex);
                         table.getItems().remove(selected);
-                        CrudRestClient.deleteCall(basePath,
-                            successResponse -> table.getItems().remove(oldIndex),
-                            failResponse -> System.err.println("Failed to delete: " + failResponse.statusCode() + " " + failResponse.body())
+                        CrudRestClient.deleteCall(basePath + "/" + id,
+                                successResponse -> table.getItems().remove(oldIndex),
+                                failResponse -> System.err.println("Failed to delete: " + failResponse.statusCode() + " " + failResponse.body())
                         );
                     }
                 });
@@ -88,23 +93,9 @@ public abstract class BaseTab<T> {
         return deleteBtn;
     }
 
-    protected Button getRefreshButton() {
-        Button refreshBtn = new Button("Обновить");
-        refreshBtn.setStyle("-fx-background-color: #36a3f7; -fx-text-fill: white; -fx-background-radius: 8;");
-        refreshBtn.setOnAction(e -> {
-//            List<T> items =
-            // FIXME
-            // Здесь — обновление с бэка (пока просто имитация)
-//            List<T> items = restGetUpdatedItemsCall(
-//                    () -> { /* showSnackbar("Удалено!"); */ },
-//                    () -> {
-//                        showAlert("Ошибка", "Не удалось обновить. Данные не изменены.");
-//                    });
-//            table.getItems().setAll(items);
-            // showSnackbar("Обновлено!");
-        });
-        return refreshBtn;
-    }
+    protected abstract Button getRefreshButton();
+
+    protected abstract String getSelectedUuid(int index);
 
     protected Region getSpacer() {
         Region spacer = new Region();

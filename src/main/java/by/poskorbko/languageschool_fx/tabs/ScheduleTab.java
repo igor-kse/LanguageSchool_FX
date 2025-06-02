@@ -20,6 +20,16 @@ public class ScheduleTab extends BaseTab<ScheduleDTO> {
         super("/schedule");
     }
 
+    @Override
+    protected Button getRefreshButton() {
+        return new Button();
+    }
+
+    @Override
+    protected String getSelectedUuid(int index) {
+        return "";
+    }
+
     public VBox createScheduleTable(List<ScheduleDTO> schedules) {
         TableView<ScheduleDTO> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);

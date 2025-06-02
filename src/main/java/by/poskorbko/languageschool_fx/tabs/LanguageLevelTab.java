@@ -19,6 +19,16 @@ public class LanguageLevelTab extends BaseTab<LevelScaleDTO> {
         super("/languages/levels");
     }
 
+    @Override
+    protected Button getRefreshButton() {
+        return new Button();
+    }
+
+    @Override
+    protected String getSelectedUuid(int index) {
+        return "";
+    }
+
     public VBox createLevelsTable(List<LevelScaleDTO> scales) {
         TableView<LevelScaleDTO> table = getTable();
 
