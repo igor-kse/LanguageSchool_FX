@@ -1,9 +1,6 @@
 package by.poskorbko.languageschool_fx.tabs;
 
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
-import by.poskorbko.languageschool_fx.util.Utils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -17,7 +14,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public abstract class BaseTab<T> {
@@ -40,7 +36,7 @@ public abstract class BaseTab<T> {
 
         Consumer<T> onSave = entityToSave -> CrudRestClient.addPostCall(
                 basePath, entityToSave,
-                successResponse -> table.getItems().add(entityToSave),
+                successResponse -> Platform.runLater(() -> getRefreshButton().fire()),
                 failResponse -> System.err.println("Failed to create: " + failResponse.statusCode() + " " + failResponse.body())
         );
         EventHandler<ActionEvent> handler = event -> showEditDialog(null, onSave);
@@ -54,14 +50,20 @@ public abstract class BaseTab<T> {
         editBtn.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
 
         EventHandler<ActionEvent> handler = event -> {
-            T selected = table.getSelectionModel().getSelectedItem();
-            int selectedIdx = table.getSelectionModel().getSelectedIndex();
+            T selected = getTable().getSelectionModel().getSelectedItem();
+            System.out.println("Выбран для редактирования: " + selected);
+            if (selected == null) {
+                System.out.println("Нет выбранного преподавателя");
+                return;
+            }
             showEditDialog(selected,
                     entityToUpdate -> CrudRestClient.putCall(
                             basePath, entityToUpdate,
-                            successResponse -> table.getItems().set(selectedIdx, entityToUpdate),
+                            successResponse -> Platform.runLater(() -> getRefreshButton().fire()),
                             failResponse -> System.err.println("Failed to edit: " + failResponse.statusCode() + " " + failResponse.body())
-                    ));
+                    )
+            );
+            getTable().getSelectionModel().clearSelection();
         };
         editBtn.setOnAction(handler);
 

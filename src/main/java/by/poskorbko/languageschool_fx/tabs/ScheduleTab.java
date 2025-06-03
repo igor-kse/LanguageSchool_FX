@@ -30,7 +30,7 @@ public class ScheduleTab extends BaseTab<ScheduleDTO> {
         return "";
     }
 
-    public VBox createScheduleTable(List<ScheduleDTO> schedules) {
+    public VBox createScheduleTable() {
         TableView<ScheduleDTO> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
@@ -51,8 +51,7 @@ public class ScheduleTab extends BaseTab<ScheduleDTO> {
                 data.getValue().startTime() + " — " + data.getValue().endTime()
         ));
 
-        table.getColumns().addAll(groupCol, languageCol, levelCol, dayCol, timeCol);
-        table.getItems().addAll(schedules);
+        table.getColumns().addAll(List.of(groupCol, languageCol, levelCol, dayCol, timeCol));
 
         VBox vbox = new VBox(8, getButtons(), table);
         VBox.setVgrow(table, Priority.ALWAYS);

@@ -41,19 +41,4 @@ public class TestData {
             case SUNDAY -> "Воскресенье";
         };
     }
-
-    public static List<LevelScaleDTO> getTestLevelScale() {
-        return List.of(new LevelScaleDTO("CEFR", List.of("A1", "A2", "B1", "B2", "C1", "C2")),
-                new LevelScaleDTO("ACTFL", List.of("Novice", "Intermediate", "Advanced", "Superior")),
-                new LevelScaleDTO("Авторская", List.of("Начальный", "Средний", "Продвинутый", "Эксперт")));
-    }
-
-    public static List<LanguageEntryDTO> getTestLanguageEntries() {
-        return List.of(
-                new LanguageEntryDTO("Английский", "CEFR", ""),
-                new LanguageEntryDTO("Французский", "CEFR", "для детей"),
-                new LanguageEntryDTO("Испанский", "ACTFL", "")
-        );
-    }
-
 }

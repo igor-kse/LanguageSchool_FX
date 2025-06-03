@@ -1,39 +1,36 @@
 package by.poskorbko.languageschool_fx.tabs;
 
-import by.poskorbko.languageschool_fx.TestData;
 import by.poskorbko.languageschool_fx.dto.LanguageEntryDTO;
-import by.poskorbko.languageschool_fx.dto.LevelScaleDTO;
+import by.poskorbko.languageschool_fx.dto.LanguageScaleDTO;
+import by.poskorbko.languageschool_fx.http.CrudRestClient;
+import by.poskorbko.languageschool_fx.util.Utils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
 
+    private static final String BASE_PATH = "/languages";
+
     public LanguagesTab() {
-        super("/languages");
+        super(BASE_PATH);
     }
 
-    @Override
-    protected Button getRefreshButton() {
-        return new Button();
-    }
-
-    @Override
-    protected String getSelectedUuid(int index) {
-        return "";
-    }
-
-    public VBox createLanguagesTable(List<LanguageEntryDTO> entries) {
-        TableView<LanguageEntryDTO> table = new TableView<>();
+    public VBox createLanguagesTable() {
+        TableView<LanguageEntryDTO> table = getTable(); // <--- здесь исправление
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<LanguageEntryDTO, String> langCol = new TableColumn<>("Язык");
-        langCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().language()));
+        langCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().name()));
 
         TableColumn<LanguageEntryDTO, String> scaleCol = new TableColumn<>("Шкала");
         scaleCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().scale()));
@@ -41,89 +38,53 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
         TableColumn<LanguageEntryDTO, String> noteCol = new TableColumn<>("Заметка");
         noteCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().note()));
 
-        table.getColumns().addAll(langCol, scaleCol, noteCol);
-        table.getItems().addAll(entries);
+        if (table.getColumns().isEmpty()) {
+            table.getColumns().addAll(List.of(langCol, scaleCol, noteCol));
+        }
 
-        // ==== КНОПКИ ====
-        Button addBtn = new Button("Добавить");
-        addBtn.setStyle("-fx-background-color: #39d353; -fx-text-fill: #333; -fx-background-radius: 8;");
-        addBtn.setOnAction(e -> {
-            showEditDialog(null, newEntry -> {
-                table.getItems().add(newEntry);
-//                restAddCall(newEntry,
-//                        () -> { /* showSnackbar("Добавлено!"); */ },
-//                        () -> {
-//                            table.getItems().remove(newEntry);
-//                            showAlert("Ошибка", "Не удалось добавить язык. Данные не изменены.");
-//                        }
-//                );
-            });
-        });
-
-        Button editBtn = new Button("Редактировать");
-        editBtn.setStyle("-fx-background-color: #ffd43b; -fx-text-fill: #333; -fx-background-radius: 8;");
-        editBtn.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
-        editBtn.setOnAction(e -> {
-            LanguageEntryDTO selected = table.getSelectionModel().getSelectedItem();
-            int selectedIdx = table.getSelectionModel().getSelectedIndex();
-            if (selected != null) {
-                showEditDialog(selected, updated -> {
-                    LanguageEntryDTO old = table.getItems().get(selectedIdx);
-                    table.getItems().set(selectedIdx, updated);
-//                    restUpdateCall(updated,
-//                            () -> { /* showSnackbar("Изменено!"); */ },
-//                            () -> {
-//                                table.getItems().set(selectedIdx, old);
-//                                showAlert("Ошибка", "Не удалось сохранить изменения. Данные не изменены.");
-//                            }
-//                    );
-                });
-            }
-        });
-
-        Button deleteBtn = new Button("Удалить");
-        deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: #333; -fx-background-radius: 8;");
-        deleteBtn.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
-        deleteBtn.setOnAction(e -> {
-            LanguageEntryDTO selected = table.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Удалить выбранный язык?", ButtonType.YES, ButtonType.NO);
-                confirm.setHeaderText("Подтверждение удаления");
-                confirm.showAndWait().ifPresent(btn -> {
-                    if (btn == ButtonType.YES) {
-                        int oldIndex = table.getItems().indexOf(selected);
-                        table.getItems().remove(selected);
-//                        restDeleteCall(selected,
-//                                () -> { /* showSnackbar("Удалено!"); */ },
-//                                () -> {
-//                                    table.getItems().add(oldIndex, selected);
-//                                    showAlert("Ошибка", "Не удалось удалить. Данные не изменены.");
-//                                }
-//                        );
-                    }
-                });
-            }
-        });
-
-        Button refreshBtn = new Button("Обновить");
-        refreshBtn.setStyle("-fx-background-color: #36a3f7; -fx-text-fill: white; -fx-background-radius: 8;");
-        refreshBtn.setOnAction(e -> {
-            // FIXME: здесь будет обновление с бэка
-            List<LanguageEntryDTO> updatedEntries = TestData.getTestLanguageEntries();
-            table.getItems().setAll(updatedEntries);
-        });
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox buttons = new HBox(10, addBtn, editBtn, deleteBtn, spacer, refreshBtn);
-        buttons.setAlignment(Pos.CENTER_LEFT);
-        buttons.setPadding(new Insets(0, 0, 10, 0));
-
-        VBox vbox = new VBox(8, buttons, table);
+        VBox vbox = new VBox(8, getButtons(), table);
         VBox.setVgrow(table, Priority.ALWAYS);
         vbox.setPadding(new Insets(10));
+
+        CrudRestClient.getCall(BASE_PATH,
+                response -> Platform.runLater(() -> {
+                    try {
+                        List<LanguageEntryDTO> languages = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
+                        table.getItems().setAll(languages);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }),
+                response -> Platform.runLater(() -> {
+                    System.out.println(response.statusCode());
+                }));
+
         return vbox;
+    }
+
+    @Override
+    protected Button getRefreshButton() {
+        Button refreshBtn = new Button("Обновить");
+        refreshBtn.setStyle("-fx-background-color: #36a3f7; -fx-text-fill: white; -fx-background-radius: 8;");
+        refreshBtn.setOnAction(event ->
+                CrudRestClient.getCall(BASE_PATH,
+                        response -> Platform.runLater(() -> {
+                            try {
+                                List<LanguageEntryDTO> entities = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
+                                getTable().getItems().setAll(entities);
+                            } catch (JsonProcessingException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }),
+                        response -> Platform.runLater(() -> {
+                            System.out.println(response.statusCode());
+                        })));
+        return refreshBtn;
+    }
+
+    @Override
+    protected String getSelectedUuid(int index) {
+        return getTable().getItems().get(index).name();
     }
 
     protected void showEditDialog(LanguageEntryDTO entry,  Consumer<LanguageEntryDTO> onSave) {
@@ -131,13 +92,26 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
         Dialog<LanguageEntryDTO> dialog = new Dialog<>();
         dialog.setTitle(isNew ? "Добавить язык" : "Редактировать язык");
 
-        //FIXME
-        var availableScales = TestData.getTestLevelScale().stream().map(LevelScaleDTO::name).toList();
+        CrudRestClient.getCall("/scales",
+                response -> Platform.runLater(() -> {
+                    try {
+                        List<LanguageScaleDTO> scales = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
+                        buildWithScales(entry, onSave, isNew, scales, dialog);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }),
+                failedResponse -> Platform.runLater(() -> System.err.println(failedResponse.statusCode())));
 
-        TextField langField = new TextField(isNew ? "" : entry.language());
+
+    }
+
+    private static void buildWithScales(LanguageEntryDTO entry, Consumer<LanguageEntryDTO> onSave, boolean isNew, List<LanguageScaleDTO> scales, Dialog<LanguageEntryDTO> dialog) {
+        TextField langField = new TextField(isNew ? "" : entry.name());
         ComboBox<String> scaleBox = new ComboBox<>();
-        scaleBox.getItems().addAll(availableScales);
-        scaleBox.setValue(isNew ? (availableScales.isEmpty() ? "" : availableScales.get(0)) : entry.scale());
+        List<String> names = scales.stream().map(LanguageScaleDTO::name).toList();
+        scaleBox.getItems().addAll(names);
+        scaleBox.setValue(isNew ? (names.isEmpty() ? "" : names.get(0)) : entry.scale());
 
         TextField noteField = new TextField(isNew ? "" : entry.note());
 
@@ -145,9 +119,12 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
         grid.setHgap(12);
         grid.setVgap(8);
         grid.setPadding(new Insets(24));
-        grid.add(new Label("Язык:"), 0, 0); grid.add(langField, 1, 0);
-        grid.add(new Label("Шкала:"), 0, 1); grid.add(scaleBox, 1, 1);
-        grid.add(new Label("Заметка:"), 0, 2); grid.add(noteField, 1, 2);
+        grid.add(new Label("Язык:"), 0, 0);
+        grid.add(langField, 1, 0);
+        grid.add(new Label("Шкала:"), 0, 1);
+        grid.add(scaleBox, 1, 1);
+        grid.add(new Label("Заметка:"), 0, 2);
+        grid.add(noteField, 1, 2);
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);

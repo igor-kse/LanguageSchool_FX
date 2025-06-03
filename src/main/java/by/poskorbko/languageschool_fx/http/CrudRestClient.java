@@ -18,6 +18,7 @@ public class CrudRestClient {
     public static void getCall(String path, Consumer<HttpResponse<String>> onSuccess, Consumer<HttpResponse<String>> onFailure) {
         new Thread(() -> {
             try {
+                System.out.println("Get call: " + path);
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(serverUrl + path))
                         .header("Accept", "application/json");
@@ -38,6 +39,7 @@ public class CrudRestClient {
     public static void addPostCall(String path, Object toJson, Consumer<HttpResponse<String>> onSuccess, Consumer<HttpResponse<String>> onFail) {
         new Thread(() -> {
             try {
+                System.out.println("Add call: " + path);
                 String json = Utils.jsonMapper.writeValueAsString(toJson);
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(serverUrl + path))
@@ -49,7 +51,29 @@ public class CrudRestClient {
                 var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
                 if (response.statusCode() == 200 || response.statusCode() == 201) {
-                    // FIXME read id
+                    onSuccess.accept(response);
+                } else {
+                    onFail.accept(response);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                onFail.accept(null);
+            }
+        }).start();
+    }
+
+    public static void patchCall(String path, Object toJson, Consumer<HttpResponse<String>> onSuccess, Consumer<HttpResponse<String>> onFail) {
+        new Thread(() -> {
+            try {
+                String json = Utils.jsonMapper.writeValueAsString(toJson);
+                HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                        .uri(URI.create(serverUrl + path))
+                        .header("Content-Type", "application/json");
+                addSessionCookie(requestBuilder);
+                var bodyPublisher = HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8);
+                var request = requestBuilder.method("PATCH", bodyPublisher).build();
+                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() == 200 || response.statusCode() == 204) {
                     onSuccess.accept(response);
                 } else {
                     onFail.accept(response);

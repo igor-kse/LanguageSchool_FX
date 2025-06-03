@@ -27,10 +27,11 @@ public class MainWindow {
     private Timer inactivityTimer;
     private final UserDTO user;
     private final int timeoutMinutes = AppConfig.getInt("session.timeout.seconds");
-    private final LanguageLevelTab languageLevelTab = new LanguageLevelTab();
+    private final LanguageScaleTab languageScaleTab = new LanguageScaleTab();
     private final LanguagesTab languagesTab = new LanguagesTab();
     private final ScheduleTab scheduleTab = new ScheduleTab();
     private final UsersTab usersTab = new UsersTab();
+    private final TeacherTab teacherTab = new TeacherTab();
 
     public MainWindow(UserDTO user) {
         this.user = user;
@@ -70,10 +71,11 @@ public class MainWindow {
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
         // FIXME
-        VBox scheduleBox = scheduleTab.createScheduleTable(TestData.getTestSchedule());
-        VBox levelsBox = languageLevelTab.createLevelsTable(TestData.getTestLevelScale());
-        VBox languagesBox = languagesTab.createLanguagesTable(TestData.getTestLanguageEntries());
+        VBox scheduleBox = scheduleTab.createScheduleTable();
+        VBox levelsBox = languageScaleTab.createLevelsTable();
+        VBox languagesBox = languagesTab.createLanguagesTable();
         VBox usersBox = usersTab.createUsersTable();
+        VBox teachersBox = teacherTab.createTeachersTable();
 
         // TODO проверить
         // Можно добавить заголовок:
@@ -84,12 +86,13 @@ public class MainWindow {
         Tab scheduleTab = new Tab("Расписание", scheduleBox);
         Tab studentsTab = new Tab("Студенты", BaseTab.createPlaceholderContent("Студенты"));
         Tab groupsTab = new Tab("Группы", BaseTab.createPlaceholderContent("Группы"));
+        Tab teachersTab = new Tab("Учителя", teachersBox);
 
         Tab languagesTab = new Tab("Языки", languagesBox);
         Tab levelsTab = new Tab("Уровни языка", levelsBox);
-        Tab spacer = createInvisibleTabSpacer(400);
+        Tab spacer = createInvisibleTabSpacer(350);
         Tab usersTab = new Tab("Пользователи", usersBox);
-        tabs.getTabs().addAll(scheduleTab, studentsTab, groupsTab, spacer, languagesTab, levelsTab, usersTab);
+        tabs.getTabs().addAll(scheduleTab, studentsTab, groupsTab, teachersTab, spacer, languagesTab, levelsTab, usersTab);
 
         // ====== Layout ======
         BorderPane root = new BorderPane();

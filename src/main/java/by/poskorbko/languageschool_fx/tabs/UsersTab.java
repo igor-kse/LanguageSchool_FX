@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -34,8 +33,10 @@ import java.util.function.Consumer;
 
 public class UsersTab extends BaseTab<UserDTO> {
 
+    private static final String BASE_PATH = "/users";
+
     public UsersTab() {
-        super("/users");
+        super(BASE_PATH);
     }
 
     public VBox createUsersTable() {
@@ -56,7 +57,7 @@ public class UsersTab extends BaseTab<UserDTO> {
         VBox.setVgrow(table, Priority.ALWAYS);
         vbox.setPadding(new Insets(10));
 
-        CrudRestClient.getCall("/users",
+        CrudRestClient.getCall(BASE_PATH,
                 response -> Platform.runLater(() -> {
                     try {
                         List<UserDTO> users = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
@@ -76,7 +77,7 @@ public class UsersTab extends BaseTab<UserDTO> {
         Button refreshBtn = new Button("Обновить");
         refreshBtn.setStyle("-fx-background-color: #36a3f7; -fx-text-fill: white; -fx-background-radius: 8;");
         refreshBtn.setOnAction(event ->
-                CrudRestClient.getCall("/users",
+                CrudRestClient.getCall(BASE_PATH,
                         response -> Platform.runLater(() -> {
                             try {
                                 List<UserDTO> entities = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
@@ -85,9 +86,7 @@ public class UsersTab extends BaseTab<UserDTO> {
                                 throw new RuntimeException(e);
                             }
                         }),
-                        response -> Platform.runLater(() -> {
-                            System.out.println(response.statusCode());
-                        })));
+                        failedResponse -> Platform.runLater(() -> System.err.println(failedResponse.statusCode()))));
         return refreshBtn;
     }
 
