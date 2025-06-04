@@ -3,7 +3,7 @@ package by.poskorbko.languageschool_fx.tabs;
 import by.poskorbko.languageschool_fx.dto.LanguageScaleDTO;
 import by.poskorbko.languageschool_fx.dto.LanguageScaleLevelDTO;
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
-import by.poskorbko.languageschool_fx.util.Utils;
+import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
@@ -59,7 +59,7 @@ public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
         CrudRestClient.getCall(BASE_PATH,
                 response -> Platform.runLater(() -> {
                     try {
-                        List<LanguageScaleDTO> scales = Utils.jsonMapper.readValue(response.body(), new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                        List<LanguageScaleDTO> scales = JsonObjectMapper.getInstance().readValue(response.body(), new com.fasterxml.jackson.core.type.TypeReference<>() {});
                         table.getItems().setAll(scales);
                     } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
                         throw new RuntimeException(e);
@@ -83,7 +83,7 @@ public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
                 CrudRestClient.getCall(BASE_PATH,
                         response -> Platform.runLater(() -> {
                             try {
-                                List<LanguageScaleDTO> entities = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
+                                List<LanguageScaleDTO> entities = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
                                 getTable().getItems().setAll(entities);
                             } catch (JsonProcessingException e) {
                                 throw new RuntimeException(e);

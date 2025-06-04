@@ -3,7 +3,7 @@ package by.poskorbko.languageschool_fx.tabs;
 import by.poskorbko.languageschool_fx.dto.LanguageEntryDTO;
 import by.poskorbko.languageschool_fx.dto.LanguageScaleDTO;
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
-import by.poskorbko.languageschool_fx.util.Utils;
+import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
@@ -26,7 +26,7 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
     }
 
     public VBox createLanguagesTable() {
-        TableView<LanguageEntryDTO> table = getTable(); // <--- здесь исправление
+        TableView<LanguageEntryDTO> table = getTable();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<LanguageEntryDTO, String> langCol = new TableColumn<>("Язык");
@@ -49,7 +49,7 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
         CrudRestClient.getCall(BASE_PATH,
                 response -> Platform.runLater(() -> {
                     try {
-                        List<LanguageEntryDTO> languages = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
+                        List<LanguageEntryDTO> languages = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
                         table.getItems().setAll(languages);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
@@ -70,7 +70,7 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
                 CrudRestClient.getCall(BASE_PATH,
                         response -> Platform.runLater(() -> {
                             try {
-                                List<LanguageEntryDTO> entities = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
+                                List<LanguageEntryDTO> entities = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
                                 getTable().getItems().setAll(entities);
                             } catch (JsonProcessingException e) {
                                 throw new RuntimeException(e);
@@ -95,7 +95,7 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
         CrudRestClient.getCall("/scales",
                 response -> Platform.runLater(() -> {
                     try {
-                        List<LanguageScaleDTO> scales = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
+                        List<LanguageScaleDTO> scales = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
                         buildWithScales(entry, onSave, isNew, scales, dialog);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);

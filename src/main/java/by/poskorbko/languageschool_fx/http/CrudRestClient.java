@@ -2,7 +2,7 @@ package by.poskorbko.languageschool_fx.http;
 
 import by.poskorbko.languageschool_fx.AppConfig;
 import by.poskorbko.languageschool_fx.AuthService;
-import by.poskorbko.languageschool_fx.util.Utils;
+import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -40,7 +40,7 @@ public class CrudRestClient {
         new Thread(() -> {
             try {
                 System.out.println("Add call: " + path);
-                String json = Utils.jsonMapper.writeValueAsString(toJson);
+                String json = JsonObjectMapper.getInstance().writeValueAsString(toJson);
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(serverUrl + path))
                         .header("Content-Type", "application/json");
@@ -65,7 +65,7 @@ public class CrudRestClient {
     public static void patchCall(String path, Object toJson, Consumer<HttpResponse<String>> onSuccess, Consumer<HttpResponse<String>> onFail) {
         new Thread(() -> {
             try {
-                String json = Utils.jsonMapper.writeValueAsString(toJson);
+                String json = JsonObjectMapper.getInstance().writeValueAsString(toJson);
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(serverUrl + path))
                         .header("Content-Type", "application/json");
@@ -88,7 +88,7 @@ public class CrudRestClient {
     public static void putCall(String path, Object toJson, Consumer<HttpResponse<String>> onSuccess, Consumer<HttpResponse<String>> onFailure) {
         new Thread(() -> {
             try {
-                String json = Utils.jsonMapper.writeValueAsString(toJson);
+                String json = JsonObjectMapper.getInstance().writeValueAsString(toJson);
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                         .uri(URI.create(serverUrl + path))
                         .header("Content-Type", "application/json");

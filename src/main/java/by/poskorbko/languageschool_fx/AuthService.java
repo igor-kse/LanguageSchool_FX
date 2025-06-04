@@ -1,7 +1,7 @@
 package by.poskorbko.languageschool_fx;
 
 import by.poskorbko.languageschool_fx.dto.UserDTO;
-import by.poskorbko.languageschool_fx.util.Utils;
+import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
 import javafx.application.Platform;
 
 import java.net.URI;
@@ -37,8 +37,9 @@ public class AuthService {
                try {
                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                    boolean ok = response.statusCode() == 200;
+
                    if (ok) {
-                       UserDTO user = Utils.jsonMapper.readValue(response.body(), UserDTO.class);
+                       UserDTO user = JsonObjectMapper.getInstance().readValue(response.body(), UserDTO.class);
                        Platform.runLater(() -> onResult.accept(true, new AuthResponse(null, user)));
                    } else {
                        String message = bundle.getString("error.auth");

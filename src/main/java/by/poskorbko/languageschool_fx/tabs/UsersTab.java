@@ -3,7 +3,7 @@ package by.poskorbko.languageschool_fx.tabs;
 import by.poskorbko.languageschool_fx.dto.Role;
 import by.poskorbko.languageschool_fx.dto.UserDTO;
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
-import by.poskorbko.languageschool_fx.util.Utils;
+import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
@@ -60,7 +60,7 @@ public class UsersTab extends BaseTab<UserDTO> {
         CrudRestClient.getCall(BASE_PATH,
                 response -> Platform.runLater(() -> {
                     try {
-                        List<UserDTO> users = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
+                        List<UserDTO> users = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
                         table.getItems().setAll(users);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
@@ -80,7 +80,7 @@ public class UsersTab extends BaseTab<UserDTO> {
                 CrudRestClient.getCall(BASE_PATH,
                         response -> Platform.runLater(() -> {
                             try {
-                                List<UserDTO> entities = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
+                                List<UserDTO> entities = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
                                 getTable().getItems().setAll(entities);
                             } catch (JsonProcessingException e) {
                                 throw new RuntimeException(e);

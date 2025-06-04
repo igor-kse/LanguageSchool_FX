@@ -32,6 +32,7 @@ public class MainWindow {
     private final ScheduleTab scheduleTab = new ScheduleTab();
     private final UsersTab usersTab = new UsersTab();
     private final TeacherTab teacherTab = new TeacherTab();
+    private final StudentsTab studentTab = new StudentsTab();
 
     public MainWindow(UserDTO user) {
         this.user = user;
@@ -70,29 +71,23 @@ public class MainWindow {
         TabPane tabs = new TabPane();
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-        // FIXME
         VBox scheduleBox = scheduleTab.createScheduleTable();
         VBox levelsBox = languageScaleTab.createLevelsTable();
         VBox languagesBox = languagesTab.createLanguagesTable();
         VBox usersBox = usersTab.createUsersTable();
         VBox teachersBox = teacherTab.createTeachersTable();
-
-        // TODO проверить
-        // Можно добавить заголовок:
-        // Label scheduleLabel = new Label("Расписание групп");
-        // scheduleLabel.setFont(Font.font(18));
-        // scheduleBox.getChildren().add(0, scheduleLabel);
+        VBox studentsBox = studentTab.createStudentsTable();
 
         Tab scheduleTab = new Tab("Расписание", scheduleBox);
-        Tab studentsTab = new Tab("Студенты", BaseTab.createPlaceholderContent("Студенты"));
+        Tab studentsTab = new Tab("Студенты", studentsBox);
         Tab groupsTab = new Tab("Группы", BaseTab.createPlaceholderContent("Группы"));
         Tab teachersTab = new Tab("Учителя", teachersBox);
 
         Tab languagesTab = new Tab("Языки", languagesBox);
         Tab levelsTab = new Tab("Уровни языка", levelsBox);
-        Tab spacer = createInvisibleTabSpacer(350);
+        Tab spacer = createInvisibleTabSpacer(380);
         Tab usersTab = new Tab("Пользователи", usersBox);
-        tabs.getTabs().addAll(scheduleTab, studentsTab, groupsTab, teachersTab, spacer, languagesTab, levelsTab, usersTab);
+        tabs.getTabs().addAll(scheduleTab, groupsTab, teachersTab, studentsTab, spacer, languagesTab, levelsTab, usersTab);
 
         // ====== Layout ======
         BorderPane root = new BorderPane();

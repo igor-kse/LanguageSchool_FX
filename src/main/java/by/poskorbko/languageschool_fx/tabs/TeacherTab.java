@@ -3,7 +3,7 @@ package by.poskorbko.languageschool_fx.tabs;
 import by.poskorbko.languageschool_fx.dto.LanguageEntryDTO;
 import by.poskorbko.languageschool_fx.dto.TeacherDTO;
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
-import by.poskorbko.languageschool_fx.util.Utils;
+import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
@@ -59,7 +59,7 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
         CrudRestClient.getCall(BASE_PATH,
                 response -> Platform.runLater(() -> {
                     try {
-                        List<TeacherDTO> teachers = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {
+                        List<TeacherDTO> teachers = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {
                         });
                         table.getItems().setAll(teachers);
                     } catch (JsonProcessingException e) {
@@ -80,7 +80,7 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
                 CrudRestClient.getCall(BASE_PATH,
                         response -> Platform.runLater(() -> {
                             try {
-                                List<TeacherDTO> entities = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {
+                                List<TeacherDTO> entities = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {
                                 });
                                 getTable().getItems().setAll(entities);
                             } catch (JsonProcessingException e) {
@@ -110,7 +110,7 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
         CrudRestClient.getCall("/languages",
                 response -> Platform.runLater(() -> {
                     try {
-                        List<LanguageEntryDTO> languageNames = Utils.jsonMapper.readValue(response.body(), new TypeReference<>() {});
+                        List<LanguageEntryDTO> languageNames = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
                         buildWithLanguages(teacher, onSave, dialog, educationField, languageNames.stream().map(LanguageEntryDTO::name).toList());
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
@@ -131,11 +131,9 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
         TextField lastNameField = new TextField(teacher == null ? "" : teacher.lastName());
         TextField emailField = new TextField(teacher == null ? "" : teacher.email());
 
-        // CheckComboBox для языков
         CheckComboBox<String> langsCombo = new CheckComboBox<>();
         langsCombo.getItems().addAll(availableLanguages);
 
-        // Восстанавливаем выбор
         if (teacher != null && teacher.languages() != null) {
             for (String lang : teacher.languages()) {
                 langsCombo.getCheckModel().check(lang);
@@ -158,10 +156,23 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
 
         dialog.getDialogPane().setPrefWidth(320);
         dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        ButtonType okButtonType = ButtonType.OK;
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+        // --- Валидация на пустое образование ---
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(okButtonType);
+        okButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            if (educationField.getText().trim().isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Пожалуйста, заполните поле \"Образование\".", ButtonType.OK);
+                alert.setHeaderText("Обязательное поле");
+                alert.showAndWait();
+                event.consume(); // Не закрывать диалог!
+            }
+        });
 
         dialog.setResultConverter(btn -> {
-            if (btn == ButtonType.OK) {
+            if (btn == okButtonType) {
                 String id = teacher == null ? null : teacher.id();
                 String firstname = firstNameField.getText().trim();
                 String lastName = lastNameField.getText().trim();
@@ -170,7 +181,6 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
                 List<String> langs = langsCombo.getCheckModel().getCheckedItems();
 
                 if (!firstname.isEmpty() && !lastName.isEmpty() && !education.isEmpty() && !langs.isEmpty() && !email.isEmpty()) {
-                    // !!! ПОМНИ О ПОРЯДКЕ !!! (id, fn, ln, education, langs, email)
                     return new TeacherDTO(id, firstname, lastName, education, langs, email);
                 }
             }
@@ -179,6 +189,7 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
 
         dialog.showAndWait().ifPresent(onSave);
     }
+
 
     @Override
     protected Button getEditButton() {
