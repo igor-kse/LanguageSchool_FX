@@ -17,6 +17,7 @@ public class AuthService {
     private final ResourceBundle bundle = ResourceBundle.getBundle("messages");
 
     private static String sessionCookie = "123";
+    private static AuthResponse lastAuthResponse;
 
     public AuthService() {
         String host = AppConfig.get("server.host");
@@ -39,21 +40,33 @@ public class AuthService {
                    boolean ok = response.statusCode() == 200;
 
                    if (ok) {
+                       response.headers().firstValue("SESSIONID").ifPresent(cookie -> sessionCookie = cookie);
                        UserDTO user = JsonObjectMapper.getInstance().readValue(response.body(), UserDTO.class);
-                       Platform.runLater(() -> onResult.accept(true, new AuthResponse(null, user)));
+                       lastAuthResponse = new AuthResponse(null, user);
+                       Platform.runLater(() -> onResult.accept(true, lastAuthResponse));
                    } else {
                        String message = bundle.getString("error.auth");
-                       Platform.runLater(() -> onResult.accept(false, new AuthResponse(message, null)));
+                       lastAuthResponse = new AuthResponse(message, null);
+                       Platform.runLater(() -> onResult.accept(false, lastAuthResponse));
                    }
                } catch (Exception e) {
                    e.printStackTrace();
-                   Platform.runLater(() -> onResult.accept(false, new AuthResponse(e.getMessage(), null)));
+                   lastAuthResponse = new AuthResponse(e.getMessage(), null);
+                   Platform.runLater(() -> onResult.accept(false, lastAuthResponse));
                }
             }).start();
     }
 
     public static String getSessionCookie() {
         return sessionCookie;
+    }
+
+    public static AuthResponse getLastAuthResponse() {
+        return lastAuthResponse;
+    }
+
+    public static UserDTO getLoggedUser() {
+        return lastAuthResponse != null ? lastAuthResponse.user() : null;
     }
 
     public record AuthResponse(String message, UserDTO user) {}

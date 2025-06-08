@@ -83,17 +83,50 @@ public class MainWindow {
         VBox groupBox = groupTab.createGroupsTable();
         VBox paymentBox = paymentTab.createPaymentsTable();
 
-        Tab scheduleTab = new Tab("Расписание", scheduleBox);
-        Tab studentsTab = new Tab("Студенты", studentsBox);
-        Tab groupsTab = new Tab("Группы", groupBox);
-        Tab teachersTab = new Tab("Учителя", teachersBox);
-        Tab paymentTab = new Tab("Платежи", paymentBox);
+        Tab scheduleTabFx = new Tab("Расписание", scheduleBox);
+        Tab studentsTabFx = new Tab("Студенты", studentsBox);
+        Tab groupsTabFx = new Tab("Группы", groupBox);
+        Tab teachersTabFx = new Tab("Учителя", teachersBox);
+        Tab paymentTabFx = new Tab("Платежи", paymentBox);
 
-        Tab languagesTab = new Tab("Языки", languagesBox);
-        Tab levelsTab = new Tab("Уровни языка", levelsBox);
+        Tab languagesTabFx = new Tab("Языки", languagesBox);
+        Tab levelsTabFx = new Tab("Уровни языка", levelsBox);
         Tab spacer = createInvisibleTabSpacer(320);
-        Tab usersTab = new Tab("Пользователи", usersBox);
-        tabs.getTabs().addAll(scheduleTab, groupsTab, teachersTab, studentsTab, paymentTab, spacer, languagesTab, levelsTab, usersTab);
+        Tab usersTabFx = new Tab("Пользователи", usersBox);
+
+        scheduleTabFx.setOnSelectionChanged(e -> {
+            if (scheduleTabFx.isSelected()) scheduleTab.getRefreshButton().fire();
+        });
+        studentsTabFx.setOnSelectionChanged(e -> {
+            if (studentsTabFx.isSelected()) studentTab.getRefreshButton().fire();
+        });
+        groupsTabFx.setOnSelectionChanged(e -> {
+            if (groupsTabFx.isSelected()) groupTab.getRefreshButton().fire();
+        });
+        teachersTabFx.setOnSelectionChanged(e -> {
+            if (teachersTabFx.isSelected()) teacherTab.getRefreshButton().fire();
+        });
+        paymentTabFx.setOnSelectionChanged(e -> {
+            if (paymentTabFx.isSelected()) paymentTab.getRefreshButton().fire();
+        });
+        languagesTabFx.setOnSelectionChanged(e -> {
+            if (languagesTabFx.isSelected()) languagesTab.getRefreshButton().fire();
+        });
+        levelsTabFx.setOnSelectionChanged(e -> {
+            if (levelsTabFx.isSelected()) languageScaleTab.getRefreshButton().fire();
+        });
+        usersTabFx.setOnSelectionChanged(e -> {
+            if (usersTabFx.isSelected()) usersTab.getRefreshButton().fire();
+        });
+
+        if (isTeacher() && !isAdmin()) {
+            tabs.getTabs().addAll(scheduleTabFx, groupsTabFx, teachersTabFx, paymentTabFx);
+        } else {
+            tabs.getTabs().addAll(scheduleTabFx, groupsTabFx, teachersTabFx, studentsTabFx, paymentTabFx);
+        }
+        if (isAdmin()) {
+            tabs.getTabs().addAll(spacer, languagesTabFx, levelsTabFx, usersTabFx);
+        }
 
         // ====== Layout ======
         BorderPane root = new BorderPane();
@@ -124,6 +157,14 @@ public class MainWindow {
             roleSet.add(Role.valueOf(role.trim()));
         }
         return Role.getStrongest(roleSet).getName();
+    }
+
+    private boolean isAdmin() {
+        return user.roles() != null && user.roles().contains(Role.ADMIN.name());
+    }
+
+    private boolean isTeacher() {
+        return user.roles() != null && user.roles().contains(Role.TEACHER.name());
     }
 
     private @NotNull ImageView createAvatar(String base64) {
