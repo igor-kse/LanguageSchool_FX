@@ -27,12 +27,14 @@ public class MainWindow {
     private Timer inactivityTimer;
     private final UserDTO user;
     private final int timeoutMinutes = AppConfig.getInt("session.timeout.seconds");
+
     private final LanguageScaleTab languageScaleTab = new LanguageScaleTab();
     private final LanguagesTab languagesTab = new LanguagesTab();
     private final ScheduleTab scheduleTab = new ScheduleTab();
     private final UsersTab usersTab = new UsersTab();
     private final TeacherTab teacherTab = new TeacherTab();
     private final StudentsTab studentTab = new StudentsTab();
+    private final GroupTab groupTab = new GroupTab();
 
     public MainWindow(UserDTO user) {
         this.user = user;
@@ -77,10 +79,11 @@ public class MainWindow {
         VBox usersBox = usersTab.createUsersTable();
         VBox teachersBox = teacherTab.createTeachersTable();
         VBox studentsBox = studentTab.createStudentsTable();
+        VBox groupBox = groupTab.createGroupsTable();
 
         Tab scheduleTab = new Tab("Расписание", scheduleBox);
         Tab studentsTab = new Tab("Студенты", studentsBox);
-        Tab groupsTab = new Tab("Группы", BaseTab.createPlaceholderContent("Группы"));
+        Tab groupsTab = new Tab("Группы", groupBox);
         Tab teachersTab = new Tab("Учителя", teachersBox);
 
         Tab languagesTab = new Tab("Языки", languagesBox);

@@ -16,6 +16,7 @@ module by.poskorbko.languageschool_fx {
     requires com.fasterxml.jackson.databind;
     requires javafx.swing;
     requires jdk.httpserver;
+    requires com.jfoenix;
 
     opens by.poskorbko.languageschool_fx to javafx.fxml;
     exports by.poskorbko.languageschool_fx;
