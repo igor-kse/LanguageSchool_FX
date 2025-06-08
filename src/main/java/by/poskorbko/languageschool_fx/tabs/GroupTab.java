@@ -70,7 +70,7 @@ public class GroupTab extends BaseTab<GroupDTO> {
     }
 
     @Override
-    protected Button getRefreshButton() {
+    public Button getRefreshButton() {
         Button refreshBtn = new Button("Обновить");
         refreshBtn.setStyle("-fx-background-color: #36a3f7; -fx-text-fill: white; -fx-background-radius: 8;");
         refreshBtn.setOnAction(event -> {
