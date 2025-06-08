@@ -120,7 +120,7 @@ public class CrudRestClient {
                 var request = requestBuilder.DELETE().build();
                 var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-                if (response.statusCode() == 200) {
+                if (response.statusCode() == 204) {
                     onSuccess.accept(response);
                 } else {
                     onFailure.accept(response);

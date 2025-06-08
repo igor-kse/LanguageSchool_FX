@@ -17,13 +17,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
 public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
 
-    private static String BASE_PATH = "/scales";
+    private static final String BASE_PATH = "/scales";
 
     public LanguageScaleTab() {
         super(BASE_PATH);
@@ -56,18 +58,7 @@ public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
         table.getColumns().addAll(List.of(scaleCol, levelsCol));
 
         // Получаем с бэка и обновляем таблицу
-        CrudRestClient.getCall(BASE_PATH,
-                response -> Platform.runLater(() -> {
-                    try {
-                        List<LanguageScaleDTO> scales = JsonObjectMapper.getInstance().readValue(response.body(), new com.fasterxml.jackson.core.type.TypeReference<>() {});
-                        table.getItems().setAll(scales);
-                    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }),
-                response -> Platform.runLater(() -> {
-                    System.out.println(response.statusCode());
-                }));
+        reloadTable();
 
         VBox vbox = new VBox(8, getButtons(), table);
         VBox.setVgrow(table, Priority.ALWAYS);
@@ -75,34 +66,41 @@ public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
         return vbox;
     }
 
+    private void reloadTable() {
+        CrudRestClient.getCall(BASE_PATH,
+                response -> Platform.runLater(() -> {
+                    try {
+                        List<LanguageScaleDTO> scales = JsonObjectMapper.getInstance().readValue(
+                                response.body(), new TypeReference<>() {});
+                        getTable().getItems().setAll(scales);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }),
+                response -> Platform.runLater(() -> {
+                    System.out.println(response.statusCode());
+                }));
+    }
+
     @Override
     protected Button getRefreshButton() {
         Button refreshBtn = new Button("Обновить");
         refreshBtn.setStyle("-fx-background-color: #36a3f7; -fx-text-fill: white; -fx-background-radius: 8;");
-        refreshBtn.setOnAction(event ->
-                CrudRestClient.getCall(BASE_PATH,
-                        response -> Platform.runLater(() -> {
-                            try {
-                                List<LanguageScaleDTO> entities = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
-                                getTable().getItems().setAll(entities);
-                            } catch (JsonProcessingException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }),
-                        response -> Platform.runLater(() -> {
-                            System.out.println(response.statusCode());
-                        })));
+        refreshBtn.setOnAction(event -> reloadTable());
         return refreshBtn;
     }
 
     @Override
     protected String getSelectedUuid(int index) {
+        // Для идентификации используем name
         return getTable().getItems().get(index).name();
     }
 
     @Override
     protected void showEditDialog(LanguageScaleDTO scale, Consumer<LanguageScaleDTO> onSave) {
         boolean isNew = (scale == null);
+        String oldName = isNew ? null : scale.name();
+
         Dialog<LanguageScaleDTO> dialog = new Dialog<>();
         dialog.setTitle(isNew ? "Добавить шкалу" : "Редактировать шкалу");
 
@@ -137,7 +135,6 @@ public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
             addDialog.showAndWait().ifPresent(val -> {
                 String name = val.trim();
                 if (!name.isEmpty() && levelsTable.getItems().stream().noneMatch(l -> l.name().equalsIgnoreCase(name))) {
-                    // Для новых id можно просто использовать UUID
                     levelsTable.getItems().add(new LanguageScaleLevelDTO(java.util.UUID.randomUUID().toString(), name));
                 }
             });
@@ -193,13 +190,26 @@ public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
                 String description = descriptionField.getText().trim();
                 List<LanguageScaleLevelDTO> levels = levelsTable.getItems();
                 if (!name.isEmpty() && !levels.isEmpty()) {
-                    // Используй Set, если нужно Set
                     return new LanguageScaleDTO(name, description, new java.util.LinkedHashSet<>(levels));
                 }
             }
             return null;
         });
 
-        dialog.showAndWait().ifPresent(onSave);
+        dialog.showAndWait().ifPresent(updatedScale -> {
+            if (updatedScale != null) {
+                if (isNew) {
+                    CrudRestClient.addPostCall(BASE_PATH, updatedScale,
+                            resp -> Platform.runLater(this::reloadTable),
+                            err -> Platform.runLater(() -> showAlert("Ошибка", "Не удалось добавить шкалу")));
+                } else {
+                    // Важно: ЭКРАНИРОВАТЬ oldName для URI!
+                    String encodedOldName = URLEncoder.encode(oldName, StandardCharsets.UTF_8);
+                    CrudRestClient.putCall(BASE_PATH + "/" + encodedOldName, updatedScale,
+                            resp -> Platform.runLater(this::reloadTable),
+                            err -> Platform.runLater(() -> showAlert("Ошибка", "Не удалось обновить шкалу")));
+                }
+            }
+        });
     }
 }
