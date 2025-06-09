@@ -55,7 +55,7 @@ public class MainWindow {
         // FIXME сделать меню
         // ====== Меню (пример) ======
         MenuButton menuBtn = new MenuButton("Меню");
-        var about = new MenuItem("О программе");
+        var about = new MenuItem("VIP Lang");
         about.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("О программе");
