@@ -55,11 +55,23 @@ public class MainWindow {
         // FIXME сделать меню
         // ====== Меню (пример) ======
         MenuButton menuBtn = new MenuButton("Меню");
-        menuBtn.getItems().addAll(
-                new MenuItem("О программе"),
-                new MenuItem("Помощь"),
-                new MenuItem("Настройки")
-        );
+        var about = new MenuItem("О программе");
+        about.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("О программе");
+            alert.setHeaderText("О программе");
+            alert.setContentText(
+                    """
+                            Программное средство для автоматизации работы
+                            школы иностранных языков "VIP Lang"
+                            
+                            Разработано студенткой второго курса группы 314371
+                            Поскробко Виктории Андреевной
+                            """
+            );
+            alert.showAndWait();
+        });
+        menuBtn.getItems().addAll(about);
 
         // ====== Шапка ======
         ImageView logo = createLogo();
@@ -152,7 +164,7 @@ public class MainWindow {
     private String resolveUserRoleName(String stringRoles) {
         String[] roles = stringRoles.substring(1, stringRoles.length() - 1).split(",");
         Set<Role> roleSet = new HashSet<>();
-        for(String role : roles) {
+        for (String role : roles) {
             roleSet.add(Role.valueOf(role.trim()));
         }
         return Role.getStrongest(roleSet).getName();
