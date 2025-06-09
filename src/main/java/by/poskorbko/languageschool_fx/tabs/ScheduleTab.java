@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -155,6 +156,23 @@ public class ScheduleTab extends BaseTab<ScheduleDTO> {
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().setPrefWidth(420);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.addEventFilter(ActionEvent.ACTION, event -> {
+            String requiredFields = "";
+            if (groupBox.getSelectionModel().getSelectedIndex() == -1) {
+                requiredFields += "        Группа\n";
+            }
+            if (dayBox.getSelectionModel().getSelectedIndex() == -1) {
+                requiredFields += "        День недели\n";
+            }
+            if (!requiredFields.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Пожалуйста, заполните поля:\n\n" + requiredFields, ButtonType.OK);
+                alert.setHeaderText("Обязательное поле");
+                alert.showAndWait();
+                event.consume(); // Не закрывать диалог!
+            }
+        });
 
         dialog.setResultConverter(btn -> {
             if (btn == ButtonType.OK) {

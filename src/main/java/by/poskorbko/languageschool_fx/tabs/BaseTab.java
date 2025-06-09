@@ -15,6 +15,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import by.poskorbko.languageschool_fx.util.ActivityMonitor;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import java.util.function.Consumer;
 
 public abstract class BaseTab<T> {
@@ -90,8 +93,9 @@ public abstract class BaseTab<T> {
                     if (btn == ButtonType.YES) {
                         int oldIndex = table.getItems().indexOf(selected);
                         String id = getSelectedUuid(oldIndex);
+                        String encodedId = URLEncoder.encode(id, StandardCharsets.UTF_8);
                         table.getItems().remove(selected);
-                        CrudRestClient.deleteCall(basePath + "/" + id,
+                        CrudRestClient.deleteCall(basePath + "/" + encodedId,
                                 successResponse -> table.getItems().remove(oldIndex),
                                 failResponse -> System.err.println("Failed to delete: " + failResponse.statusCode() + " " + failResponse.body())
                         );
@@ -122,9 +126,16 @@ public abstract class BaseTab<T> {
     protected abstract void showEditDialog(T item, Consumer<T> onSave);
 
     protected static void showAlert(String title, String msg) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
-        alert.setHeaderText(title);
-        alert.showAndWait();
+        Runnable show = () -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
+            alert.setHeaderText(title);
+            alert.showAndWait();
+        };
+        if (Platform.isFxApplicationThread()) {
+            show.run();
+        } else {
+            Platform.runLater(show);
+        }
     }
 
     // === Заглушка для вкладок ===

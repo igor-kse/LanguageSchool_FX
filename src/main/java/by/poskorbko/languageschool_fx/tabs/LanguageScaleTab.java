@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -186,6 +187,26 @@ public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.addEventFilter(ActionEvent.ACTION, event -> {
+            String requiredFields = "";
+            if (nameField.getText().trim().isEmpty()) {
+                requiredFields += "        Название шкалы\n";
+            }
+            if (descriptionField.getText().trim().isEmpty()) {
+                requiredFields += "        Описание\n";
+            }
+            if (levelsTable.getItems().isEmpty()) {
+                requiredFields += "        Уровни\n";
+            }
+            if (!requiredFields.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Пожалуйста, заполните поля:\n\n" + requiredFields, ButtonType.OK);
+                alert.setHeaderText("Обязательное поле");
+                alert.showAndWait();
+                event.consume(); // Не закрывать диалог!
+            }
+        });
 
         dialog.setResultConverter(btn -> {
             if (btn == ButtonType.OK) {

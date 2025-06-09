@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -217,6 +218,32 @@ public class UsersTab extends BaseTab<UserDTO> {
         dialog.getDialogPane().setPrefWidth(440);
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.addEventFilter(ActionEvent.ACTION, event -> {
+            String requiredFields = "";
+            if (firstNameField.getText().trim().isEmpty()) {
+                requiredFields += "        Имя\n";
+            }
+            if (lastNameField.getText().trim().isEmpty()) {
+                requiredFields += "        Фамилия\n";
+            }
+            if (emailField.getText().trim().isEmpty()) {
+                requiredFields += "        email\n";
+            }
+            if (passwordField.getText().trim().isEmpty()) {
+                requiredFields += "        Пароль\n";
+            }
+            if (rolesCombo.getCheckModel().getCheckedIndices().isEmpty()) {
+                requiredFields += "        Роли\n";
+            }
+            if (!requiredFields.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Пожалуйста, заполните поля:\n\n" + requiredFields, ButtonType.OK);
+                alert.setHeaderText("Обязательное поле");
+                alert.showAndWait();
+                event.consume(); // Не закрывать диалог!
+            }
+        });
 
         dialog.setResultConverter(btn -> {
             if (btn == ButtonType.OK) {

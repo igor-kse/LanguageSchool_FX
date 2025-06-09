@@ -11,8 +11,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.CheckComboBox;
@@ -52,7 +54,11 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
             table.getColumns().addAll(List.of(nameCol, emailCol, educationCol, langsCol));
         }
 
-        VBox vbox = new VBox(8, getButtons(), table);
+        HBox buttons = new HBox(10, getEditButton(), getDeleteButton(), getSpacer(), getRefreshButton());
+        buttons.setAlignment(Pos.CENTER_LEFT);
+        buttons.setPadding(new Insets(0, 0, 10, 0));
+
+        VBox vbox = new VBox(8, buttons, table);
         VBox.setVgrow(table, Priority.ALWAYS);
         vbox.setPadding(new Insets(10));
 
@@ -110,7 +116,8 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
         CrudRestClient.getCall("/languages",
                 response -> Platform.runLater(() -> {
                     try {
-                        List<LanguageEntryDTO> languageNames = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
+                        List<LanguageEntryDTO> languageNames = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {
+                        });
                         buildWithLanguages(teacher, onSave, dialog, educationField, languageNames.stream().map(LanguageEntryDTO::name).toList());
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
@@ -146,25 +153,37 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
         emailField.setEditable(!readOnly);
 
         GridPane grid = new GridPane();
-        grid.setHgap(12); grid.setVgap(8); grid.setPadding(new Insets(24));
-        grid.add(new Label("Имя:"), 0, 0); grid.add(firstNameField, 1, 0);
-        grid.add(new Label("Фамилия:"), 0, 1); grid.add(lastNameField, 1, 1);
-        grid.add(new Label("Email:"), 0, 2); grid.add(emailField, 1, 2);
-        grid.add(new Label("Образование:"), 0, 3); grid.add(educationField, 1, 3);
-        grid.add(new Label("Языки:"), 0, 4); grid.add(langsCombo, 1, 4);
+        grid.setHgap(12);
+        grid.setVgap(8);
+        grid.setPadding(new Insets(24));
+        grid.add(new Label("Имя:"), 0, 0);
+        grid.add(firstNameField, 1, 0);
+        grid.add(new Label("Фамилия:"), 0, 1);
+        grid.add(lastNameField, 1, 1);
+        grid.add(new Label("Email:"), 0, 2);
+        grid.add(emailField, 1, 2);
+        grid.add(new Label("Образование:"), 0, 3);
+        grid.add(educationField, 1, 3);
+        grid.add(new Label("Языки:"), 0, 4);
+        grid.add(langsCombo, 1, 4);
         grid.setPrefWidth(300);
 
         dialog.getDialogPane().setPrefWidth(320);
         dialog.getDialogPane().setContent(grid);
 
-        ButtonType okButtonType = ButtonType.OK;
-        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // --- Валидация на пустое образование ---
-        Button okButton = (Button) dialog.getDialogPane().lookupButton(okButtonType);
-        okButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.addEventFilter(ActionEvent.ACTION, event -> {
+            String requiredFields = "";
             if (educationField.getText().trim().isEmpty()) {
-                Alert alert = new Alert(Alert.AlertType.WARNING, "Пожалуйста, заполните поле \"Образование\".", ButtonType.OK);
+               requiredFields += "        Образование\n";
+            }
+            if (langsCombo.getCheckModel().getCheckedItems().isEmpty()) {
+                requiredFields += "        Языки\n";
+            }
+            if (!requiredFields.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Пожалуйста, заполните поля:\n\n" + requiredFields, ButtonType.OK);
                 alert.setHeaderText("Обязательное поле");
                 alert.showAndWait();
                 event.consume(); // Не закрывать диалог!
@@ -172,17 +191,15 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
         });
 
         dialog.setResultConverter(btn -> {
-            if (btn == okButtonType) {
+            if (btn == ButtonType.OK) {
                 String id = teacher == null ? null : teacher.id();
                 String firstname = firstNameField.getText().trim();
                 String lastName = lastNameField.getText().trim();
                 String email = emailField.getText().trim();
                 String education = educationField.getText().trim();
-                List<String> langs = langsCombo.getCheckModel().getCheckedItems();
+                List<String> languages = langsCombo.getCheckModel().getCheckedItems();
 
-                if (!firstname.isEmpty() && !lastName.isEmpty() && !education.isEmpty() && !langs.isEmpty() && !email.isEmpty()) {
-                    return new TeacherDTO(id, firstname, lastName, education, langs, email);
-                }
+                return new TeacherDTO(id, firstname, lastName, education, languages, email);
             }
             return null;
         });

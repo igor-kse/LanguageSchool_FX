@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -171,6 +172,26 @@ public class PaymentTab extends BaseTab<PaymentDTO> {
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().setPrefWidth(400);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.addEventFilter(ActionEvent.ACTION, event -> {
+            String requiredFields = "";
+            if (userBox.getSelectionModel().getSelectedIndex() == -1) {
+                requiredFields += "        Плательщик\n";
+            }
+            if (rubField.getText().isEmpty()) {
+                requiredFields += "        Сумма\n";
+            }
+            if (descField.getText().isEmpty()) {
+                requiredFields += "        Описание\n";
+            }
+            if (!requiredFields.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Пожалуйста, заполните поля:\n\n" + requiredFields, ButtonType.OK);
+                alert.setHeaderText("Обязательное поле");
+                alert.showAndWait();
+                event.consume(); // Не закрывать диалог!
+            }
+        });
 
         dialog.setResultConverter(btn -> {
             if (btn == ButtonType.OK) {

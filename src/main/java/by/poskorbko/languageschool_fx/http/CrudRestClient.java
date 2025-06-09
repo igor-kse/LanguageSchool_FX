@@ -5,6 +5,7 @@ import by.poskorbko.languageschool_fx.AuthService;
 import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -21,6 +22,7 @@ public class CrudRestClient {
                 System.out.println("Get call: " + path);
                 var requestBuilder = getBuilder(path);
                 var response = client.send(requestBuilder.GET().build(), HttpResponse.BodyHandlers.ofString());
+                System.out.println("Response status code: " + response.statusCode());
                 if (response.statusCode() == 200) {
                     onSuccess.accept(response);
                 } else {
@@ -41,6 +43,7 @@ public class CrudRestClient {
                 var requestBuilder = getBuilder(path);
                 var request = requestBuilder.POST(bodyPublisher).build();
                 var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                System.out.println("Response status code: " + response.statusCode());
 
                 if (response.statusCode() == 200 || response.statusCode() == 201) {
                     onSuccess.accept(response);
@@ -62,6 +65,7 @@ public class CrudRestClient {
                 var requestBuilder = getBuilder(path);
                 var request = requestBuilder.method("PATCH", bodyPublisher).build();
                 var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                System.out.println("Response status code: " + response.statusCode());
                 if (response.statusCode() == 200 || response.statusCode() == 204) {
                     onSuccess.accept(response);
                 } else {
@@ -82,7 +86,7 @@ public class CrudRestClient {
                 var bodyPublisher = HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8);
                 var request = requestBuilder.PUT(bodyPublisher).build();
                 var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
+                System.out.println("Response status code: " + response.statusCode());
                 if (response.statusCode() == 204) {
                     onSuccess.accept(response);
                 } else {
@@ -100,7 +104,7 @@ public class CrudRestClient {
                 var requestBuilder = getBuilder(path);
                 var request = requestBuilder.DELETE().build();
                 var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
+                System.out.println("Response status code: " + response.statusCode());
                 if (response.statusCode() == 204) {
                     onSuccess.accept(response);
                 } else {

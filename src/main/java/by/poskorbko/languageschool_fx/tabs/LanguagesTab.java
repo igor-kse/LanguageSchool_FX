@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -49,7 +50,8 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
         CrudRestClient.getCall(BASE_PATH,
                 response -> Platform.runLater(() -> {
                     try {
-                        List<LanguageEntryDTO> languages = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
+                        List<LanguageEntryDTO> languages = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {
+                        });
                         table.getItems().setAll(languages);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
@@ -70,7 +72,8 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
                 CrudRestClient.getCall(BASE_PATH,
                         response -> Platform.runLater(() -> {
                             try {
-                                List<LanguageEntryDTO> entities = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
+                                List<LanguageEntryDTO> entities = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {
+                                });
                                 getTable().getItems().setAll(entities);
                             } catch (JsonProcessingException e) {
                                 throw new RuntimeException(e);
@@ -87,7 +90,7 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
         return getTable().getItems().get(index).name();
     }
 
-    protected void showEditDialog(LanguageEntryDTO entry,  Consumer<LanguageEntryDTO> onSave) {
+    protected void showEditDialog(LanguageEntryDTO entry, Consumer<LanguageEntryDTO> onSave) {
         boolean isNew = (entry == null);
         Dialog<LanguageEntryDTO> dialog = createDialog();
         dialog.setTitle(isNew ? "Добавить язык" : "Редактировать язык");
@@ -95,15 +98,16 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
         CrudRestClient.getCall("/scales",
                 response -> Platform.runLater(() -> {
                     try {
-                        List<LanguageScaleDTO> scales = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {});
+                        List<LanguageScaleDTO> scales = JsonObjectMapper.getInstance().readValue(response.body(), new TypeReference<>() {
+                        });
                         buildWithScales(entry, onSave, isNew, scales, dialog);
                     } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
+                        showAlert("Ошибка", "Ошибка разбора шкал");
                     }
                 }),
-                failedResponse -> Platform.runLater(() -> System.err.println(failedResponse.statusCode())));
-
-
+                failedResponse -> Platform.runLater(() ->
+                        showAlert("Ошибка", "Ошибка загрузки шкал: " + (failedResponse == null ? "" : failedResponse.statusCode()))));
     }
 
     private static void buildWithScales(LanguageEntryDTO entry, Consumer<LanguageEntryDTO> onSave, boolean isNew, List<LanguageScaleDTO> scales, Dialog<LanguageEntryDTO> dialog) {
@@ -129,14 +133,32 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.addEventFilter(ActionEvent.ACTION, event -> {
+            String requiredFields = "";
+            if (langField.getText().trim().isEmpty()) {
+                requiredFields += "        Язык\n";
+            }
+            if (scaleBox.getSelectionModel().isEmpty()) {
+                requiredFields += "        Шкала\n";
+            }
+            if (noteField.getText().isEmpty()) {
+                requiredFields += "        Заметка\n";
+            }
+            if (!requiredFields.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Пожалуйста, заполните поля:\n\n" + requiredFields, ButtonType.OK);
+                alert.setHeaderText("Обязательное поле");
+                alert.showAndWait();
+                event.consume(); // Не закрывать диалог!
+            }
+        });
+
         dialog.setResultConverter(btn -> {
             if (btn == ButtonType.OK) {
                 String language = langField.getText().trim();
                 String scale = scaleBox.getValue();
                 String note = noteField.getText().trim();
-                if (!language.isEmpty() && scale != null && !scale.isEmpty()) {
-                    return new LanguageEntryDTO(language, scale, note);
-                }
+                return new LanguageEntryDTO(language, scale, note);
             }
             return null;
         });

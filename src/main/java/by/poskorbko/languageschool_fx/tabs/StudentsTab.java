@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -198,7 +199,6 @@ public class StudentsTab extends BaseTab<StudentDTO> {
             );
         }
 
-        boolean readOnly = !isNew;
         firstNameField.setEditable(isNew);
         lastNameField.setEditable(isNew);
         emailField.setEditable(isNew);
@@ -241,6 +241,35 @@ public class StudentsTab extends BaseTab<StudentDTO> {
                                 .or(lastNameField.textProperty().isEmpty())
                                 .or(emailField.textProperty().isEmpty())
                 );
+            }
+        });
+
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.addEventFilter(ActionEvent.ACTION, event -> {
+            String requiredFields = "";
+            if (userCombo.getSelectionModel().getSelectedIndex() == -1) {
+                requiredFields += "        Пользователь\n";
+            }
+            if (firstNameField.getText().isEmpty()) {
+                requiredFields += "        Имя\n";
+            }
+            if (lastNameField.getText().isEmpty()) {
+                requiredFields += "        Фамилия\n";
+            }
+            if (emailField.getText().isEmpty()) {
+                requiredFields += "        email\n";
+            }
+            if (ageField.getText().isEmpty()) {
+                requiredFields += "        Возраст\n";
+            }
+            if (channelField.getText().isEmpty()) {
+                requiredFields += "        Канал\n";
+            }
+            if (!requiredFields.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Пожалуйста, заполните поля:\n\n" + requiredFields, ButtonType.OK);
+                alert.setHeaderText("Обязательное поле");
+                alert.showAndWait();
+                event.consume(); // Не закрывать диалог!
             }
         });
 
