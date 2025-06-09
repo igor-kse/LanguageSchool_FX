@@ -11,7 +11,10 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -22,7 +25,7 @@ public class GroupTab extends BaseTab<GroupDTO> {
     // Для выпадающих списков
     private final ObservableList<TeacherDTO> teachers = FXCollections.observableArrayList();
     private final ObservableList<LanguageDTO> languages = FXCollections.observableArrayList();
-    private final ObservableList<ScaleLevelDTO> levels = FXCollections.observableArrayList();
+    private final ObservableList<LanguageScaleLevelDTO> levels = FXCollections.observableArrayList();
 
     public GroupTab() {
         super(BASE_PATH);
@@ -101,7 +104,7 @@ public class GroupTab extends BaseTab<GroupDTO> {
     protected void showEditDialog(GroupDTO group, Consumer<GroupDTO> onSave) {
         boolean isNew = (group == null);
 
-        Dialog<GroupDTO> dialog = new Dialog<>();
+        Dialog<GroupDTO> dialog = createDialog();
         dialog.setTitle(isNew ? "Добавить группу" : "Редактировать группу");
 
         // Поля формы
@@ -141,20 +144,20 @@ public class GroupTab extends BaseTab<GroupDTO> {
             }
         });
 
-        ComboBox<ScaleLevelDTO> levelBox = new ComboBox<>(levels);
+        ComboBox<LanguageScaleLevelDTO> levelBox = new ComboBox<>(levels);
         levelBox.setPromptText("Уровень");
 
         // --- ОТРАЖЕНИЕ ТОЛЬКО ИМЕНИ УРОВНЯ ---
         levelBox.setCellFactory(list -> new ListCell<>() {
             @Override
-            protected void updateItem(ScaleLevelDTO item, boolean empty) {
+            protected void updateItem(LanguageScaleLevelDTO item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? "" : item.name());
             }
         });
         levelBox.setButtonCell(new ListCell<>() {
             @Override
-            protected void updateItem(ScaleLevelDTO item, boolean empty) {
+            protected void updateItem(LanguageScaleLevelDTO item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? "" : item.name());
             }
@@ -167,7 +170,7 @@ public class GroupTab extends BaseTab<GroupDTO> {
                 levels.addAll(newLang.scale().levels());
                 if (!isNew && group.levelDTO() != null) {
                     // установить значение level
-                    for (ScaleLevelDTO l : levels) {
+                    for (LanguageScaleLevelDTO l : levels) {
                         if (l.id().equals(group.levelDTO().id())) {
                             levelBox.getSelectionModel().select(l);
                             break;
@@ -204,7 +207,7 @@ public class GroupTab extends BaseTab<GroupDTO> {
                 String name = nameField.getText().trim();
                 TeacherDTO teacher = teacherBox.getValue();
                 LanguageDTO language = languageBox.getValue();
-                ScaleLevelDTO level = levelBox.getValue();
+                LanguageScaleLevelDTO level = levelBox.getValue();
                 if (name.isEmpty() || teacher == null || language == null || level == null) {
                     showAlert("Ошибка", "Заполните все поля");
                     return null;
@@ -273,7 +276,7 @@ public class GroupTab extends BaseTab<GroupDTO> {
     }
 
     private void showStudentsDualListDialog(GroupDTO group) {
-        Dialog<Void> dialog = new Dialog<>();
+        Dialog<Void> dialog = createDialog();
         dialog.setTitle("Управление студентами группы " + group.name());
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 

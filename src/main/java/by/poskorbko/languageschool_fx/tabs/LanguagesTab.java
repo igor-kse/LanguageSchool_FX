@@ -89,7 +89,7 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
 
     protected void showEditDialog(LanguageEntryDTO entry,  Consumer<LanguageEntryDTO> onSave) {
         boolean isNew = (entry == null);
-        Dialog<LanguageEntryDTO> dialog = new Dialog<>();
+        Dialog<LanguageEntryDTO> dialog = createDialog();
         dialog.setTitle(isNew ? "Добавить язык" : "Редактировать язык");
 
         CrudRestClient.getCall("/scales",

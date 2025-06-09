@@ -13,6 +13,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import by.poskorbko.languageschool_fx.util.ActivityMonitor;
 
 import java.util.function.Consumer;
 
@@ -28,6 +29,12 @@ public abstract class BaseTab<T> {
 
     protected TableView<T> getTable() {
         return table;
+    }
+
+    protected <E> Dialog<E> createDialog() {
+        Dialog<E> dialog = new Dialog<>();
+        ActivityMonitor.attach(dialog.getDialogPane());
+        return dialog;
     }
 
     protected Button getAddButton() {

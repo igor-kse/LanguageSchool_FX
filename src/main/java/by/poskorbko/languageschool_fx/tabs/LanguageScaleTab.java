@@ -4,6 +4,7 @@ import by.poskorbko.languageschool_fx.dto.LanguageScaleDTO;
 import by.poskorbko.languageschool_fx.dto.LanguageScaleLevelDTO;
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
 import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
+import by.poskorbko.languageschool_fx.util.ActivityMonitor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
@@ -101,7 +102,7 @@ public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
         boolean isNew = (scale == null);
         String oldName = isNew ? null : scale.name();
 
-        Dialog<LanguageScaleDTO> dialog = new Dialog<>();
+        Dialog<LanguageScaleDTO> dialog = createDialog();
         dialog.setTitle(isNew ? "Добавить шкалу" : "Редактировать шкалу");
 
         TextField nameField = new TextField(isNew ? "" : scale.name());
@@ -129,6 +130,7 @@ public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
 
         addBtn.setOnAction(e -> {
             TextInputDialog addDialog = new TextInputDialog();
+            ActivityMonitor.attach(addDialog.getDialogPane());
             addDialog.setTitle("Добавить уровень");
             addDialog.setHeaderText(null);
             addDialog.setContentText("Введите новый уровень:");
@@ -145,6 +147,7 @@ public class LanguageScaleTab extends BaseTab<LanguageScaleDTO> {
             LanguageScaleLevelDTO selected = levelsTable.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 TextInputDialog editDialog = new TextInputDialog(selected.name());
+                ActivityMonitor.attach(editDialog.getDialogPane());
                 editDialog.setTitle("Редактировать уровень");
                 editDialog.setHeaderText(null);
                 editDialog.setContentText("Изменить уровень:");

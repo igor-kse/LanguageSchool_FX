@@ -5,5 +5,5 @@ public record GroupDTO(
         String name,
         TeacherDTO teacher,
         LanguageDTO language,
-        ScaleLevelDTO levelDTO
+        LanguageScaleLevelDTO levelDTO
 ) {}

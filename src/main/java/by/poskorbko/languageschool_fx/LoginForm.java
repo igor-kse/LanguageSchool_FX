@@ -2,7 +2,6 @@ package by.poskorbko.languageschool_fx;
 
 import by.poskorbko.languageschool_fx.dto.UserDTO;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;

@@ -103,7 +103,7 @@ public class PaymentTab extends BaseTab<PaymentDTO> {
     protected void showEditDialog(PaymentDTO payment, Consumer<PaymentDTO> onSave) {
         boolean isNew = (payment == null);
 
-        Dialog<PaymentDTO> dialog = new Dialog<>();
+        Dialog<PaymentDTO> dialog = createDialog();
         dialog.setTitle(isNew ? "Добавить платёж" : "Редактировать платёж");
 
         ComboBox<UserDTO> userBox = new ComboBox<>(users);

@@ -1,7 +1,5 @@
 package by.poskorbko.languageschool_fx.dto;
 
-import java.util.List;
-
 public record StudentDTO(
         String id,
         int age,

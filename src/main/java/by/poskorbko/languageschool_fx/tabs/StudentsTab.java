@@ -99,7 +99,7 @@ public class StudentsTab extends BaseTab<StudentDTO> {
 
     @Override
     protected void showEditDialog(StudentDTO student, Consumer<StudentDTO> onSave) {
-        Dialog<StudentDTO> dialog = new Dialog<>();
+        Dialog<StudentDTO> dialog = createDialog();
         boolean isNew = (student == null);
         dialog.setTitle(isNew ? "Добавить студента" : "Редактировать студента");
 

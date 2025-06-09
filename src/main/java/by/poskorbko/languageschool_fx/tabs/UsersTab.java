@@ -118,7 +118,7 @@ public class UsersTab extends BaseTab<UserDTO> {
     protected void showEditDialog(UserDTO user, Consumer<UserDTO> onSave) {
         boolean isNew = (user == null);
 
-        Dialog<UserDTO> dialog = new Dialog<>();
+        Dialog<UserDTO> dialog = createDialog();
         dialog.setTitle(isNew ? "Добавить пользователя" : "Редактировать пользователя");
 
         TextField firstNameField = new TextField(isNew ? "" : user.firstName());

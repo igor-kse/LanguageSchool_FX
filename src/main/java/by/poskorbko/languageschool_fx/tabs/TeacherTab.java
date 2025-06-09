@@ -99,7 +99,7 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
     }
 
     protected void showEditDialog(TeacherDTO teacher, Consumer<TeacherDTO> onSave) {
-        Dialog<TeacherDTO> dialog = new Dialog<>();
+        Dialog<TeacherDTO> dialog = createDialog();
         dialog.setTitle(teacher == null ? "Добавить учителя" : "Редактировать учителя");
 
         // остальные поля...

@@ -3,6 +3,7 @@ package by.poskorbko.languageschool_fx;
 import by.poskorbko.languageschool_fx.dto.Role;
 import by.poskorbko.languageschool_fx.dto.UserDTO;
 import by.poskorbko.languageschool_fx.tabs.*;
+import by.poskorbko.languageschool_fx.util.ActivityMonitor;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -10,8 +11,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
@@ -137,8 +136,8 @@ public class MainWindow {
 
         // ====== Авто-логаут ======
         Runnable resetTimer = () -> restartTimer(stage, onLogout);
-        scene.addEventFilter(MouseEvent.ANY, e -> resetTimer.run());
-        scene.addEventFilter(KeyEvent.ANY, e -> resetTimer.run());
+        ActivityMonitor.setOnActivity(resetTimer);
+        ActivityMonitor.attach(scene);
 
         String style = Objects.requireNonNull(getClass().getResource("main.css")).toExternalForm();
         scene.getStylesheets().add(style);

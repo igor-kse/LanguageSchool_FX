@@ -1,6 +1,8 @@
 package by.poskorbko.languageschool_fx.tabs;
 
-import by.poskorbko.languageschool_fx.dto.*;
+import by.poskorbko.languageschool_fx.dto.GroupDTO;
+import by.poskorbko.languageschool_fx.dto.ScheduleDTO;
+import by.poskorbko.languageschool_fx.dto.ScheduleToPost;
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
 import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -103,7 +105,7 @@ public class ScheduleTab extends BaseTab<ScheduleDTO> {
     protected void showEditDialog(ScheduleDTO schedule, Consumer<ScheduleDTO> onSave) {
         boolean isNew = (schedule == null);
 
-        Dialog<ScheduleToPost> dialog = new Dialog<>();
+        Dialog<ScheduleToPost> dialog = createDialog();
         dialog.setTitle(isNew ? "Добавить занятие" : "Редактировать занятие");
 
         ComboBox<GroupDTO> groupBox = new ComboBox<>(groups);
