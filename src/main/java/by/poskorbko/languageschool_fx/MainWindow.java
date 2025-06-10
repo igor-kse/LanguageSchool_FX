@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainWindow {
     private final ResourceBundle bundle = ResourceBundle.getBundle("messages");
@@ -85,14 +86,15 @@ public class MainWindow {
         TabPane tabs = new TabPane();
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-        VBox scheduleBox = scheduleTab.createScheduleTable();
+        Set<Role> roles = user.roles().stream().map(Role::valueOf).collect(Collectors.toSet());
+        VBox scheduleBox = scheduleTab.createScheduleTable(roles);
         VBox levelsBox = languageScaleTab.createLevelsTable();
         VBox languagesBox = languagesTab.createLanguagesTable();
         VBox usersBox = usersTab.createUsersTable();
         VBox teachersBox = teacherTab.createTeachersTable();
         VBox studentsBox = studentTab.createStudentsTable();
-        VBox groupBox = groupTab.createGroupsTable();
-        VBox paymentBox = paymentTab.createPaymentsTable();
+        VBox groupBox = groupTab.createGroupsTable(roles);
+        VBox paymentBox = paymentTab.createPaymentsTable(roles);
 
         Tab scheduleTabFx = new Tab("Расписание", scheduleBox);
         Tab studentsTabFx = new Tab("Студенты", studentsBox);
@@ -130,13 +132,12 @@ public class MainWindow {
             if (usersTabFx.isSelected()) usersTab.getRefreshButton().fire();
         });
 
-        if (isTeacher() && !isAdmin()) {
-            tabs.getTabs().addAll(scheduleTabFx, groupsTabFx, teachersTabFx, paymentTabFx);
-        } else {
-            tabs.getTabs().addAll(scheduleTabFx, groupsTabFx, teachersTabFx, studentsTabFx, paymentTabFx);
-        }
+
         if (isAdmin()) {
-            tabs.getTabs().addAll(spacer, languagesTabFx, levelsTabFx, usersTabFx);
+            tabs.getTabs().addAll(scheduleTabFx, groupsTabFx, teachersTabFx, studentsTabFx, paymentTabFx,
+                    spacer, languagesTabFx, levelsTabFx, usersTabFx);
+        } else {
+            tabs.getTabs().addAll(scheduleTabFx, groupsTabFx, paymentTabFx);
         }
 
         // ====== Layout ======

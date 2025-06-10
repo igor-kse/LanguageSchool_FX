@@ -43,7 +43,8 @@ public class LanguagesTab extends BaseTab<LanguageEntryDTO> {
             table.getColumns().addAll(List.of(langCol, scaleCol, noteCol));
         }
 
-        VBox vbox = new VBox(8, getButtons(), table);
+        String message = "Удалить язык?";
+        VBox vbox = new VBox(8, getButtons(message), table);
         VBox.setVgrow(table, Priority.ALWAYS);
         vbox.setPadding(new Insets(10));
 

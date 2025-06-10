@@ -54,7 +54,8 @@ public class TeacherTab extends BaseTab<TeacherDTO> {
             table.getColumns().addAll(List.of(nameCol, emailCol, educationCol, langsCol));
         }
 
-        HBox buttons = new HBox(10, getEditButton(), getDeleteButton(), getSpacer(), getRefreshButton());
+        String message = "Удалить учителя?";
+        HBox buttons = new HBox(10, getEditButton(), getDeleteButton(message), getSpacer(), getRefreshButton());
         buttons.setAlignment(Pos.CENTER_LEFT);
         buttons.setPadding(new Insets(0, 0, 10, 0));
 

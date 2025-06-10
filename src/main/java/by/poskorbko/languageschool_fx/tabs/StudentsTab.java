@@ -54,7 +54,8 @@ public class StudentsTab extends BaseTab<StudentDTO> {
             table.getColumns().addAll(nameCol, emailCol, ageCol, channelCol, hobbiesCol, noteCol);
         }
 
-        VBox vbox = new VBox(8, getButtons(), table);
+        String message = "Удалить студента?";
+        VBox vbox = new VBox(8, getButtons(message), table);
         VBox.setVgrow(table, Priority.ALWAYS);
         vbox.setPadding(new Insets(10));
 

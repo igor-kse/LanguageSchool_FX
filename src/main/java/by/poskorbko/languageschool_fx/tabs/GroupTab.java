@@ -11,12 +11,14 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class GroupTab extends BaseTab<GroupDTO> {
@@ -32,7 +34,7 @@ public class GroupTab extends BaseTab<GroupDTO> {
         super(BASE_PATH);
     }
 
-    public VBox createGroupsTable() {
+    public VBox createGroupsTable(Set<Role> roles) {
         TableView<GroupDTO> table = getTable();
 
         TableColumn<GroupDTO, String> nameCol = new TableColumn<>("Группа");
@@ -56,7 +58,17 @@ public class GroupTab extends BaseTab<GroupDTO> {
 
         table.getColumns().addAll(nameCol, teacherCol, languageCol, scaleCol, levelCol);
 
-        VBox vbox = new VBox(8, getButtons(), table);
+        String deleteMessage = "Удалить группу?";
+        Node[] buttons;
+        if (roles.contains(Role.ADMIN)) {
+            buttons = new Node[]{getButtons(deleteMessage)};
+        } else if (roles.contains(Role.TEACHER)) {
+            buttons = new Node[]{getStudentsButton(), getRefreshButton()};
+        } else {
+            buttons = new Node[]{getRefreshAsButtons()};
+        }
+        HBox hBox = new HBox(10, buttons);
+        VBox vbox = new VBox(8, hBox, table);
         VBox.setVgrow(table, Priority.ALWAYS);
         vbox.setPadding(new Insets(10));
 
@@ -67,7 +79,7 @@ public class GroupTab extends BaseTab<GroupDTO> {
     }
 
     protected HBox getButtons() {
-        HBox buttons = new HBox(10, getAddButton(), getEditButton(), getDeleteButton(), getStudentsButton(), getSpacer(), getRefreshButton());
+        HBox buttons = new HBox(10, getAddButton(), getEditButton(), getDeleteButton("Удалить группу?"), getStudentsButton(), getSpacer(), getRefreshButton());
         buttons.setAlignment(Pos.CENTER_LEFT);
         buttons.setPadding(new Insets(0, 0, 10, 0));
         return buttons;

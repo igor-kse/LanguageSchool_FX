@@ -1,11 +1,14 @@
 package by.poskorbko.languageschool_fx.tabs;
 
+import by.poskorbko.languageschool_fx.dto.Role;
+import by.poskorbko.languageschool_fx.dto.ScheduleDTO;
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -14,10 +17,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import by.poskorbko.languageschool_fx.util.ActivityMonitor;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import java.util.Set;
 import java.util.function.Consumer;
 
 public abstract class BaseTab<T> {
@@ -80,14 +85,14 @@ public abstract class BaseTab<T> {
         return editBtn;
     }
 
-    protected Button getDeleteButton() {
+    protected Button getDeleteButton(String message) {
         Button deleteBtn = new Button("Удалить");
         deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: #333; -fx-background-radius: 8;");
         deleteBtn.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
         deleteBtn.setOnAction(e -> {
             T selected = table.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Удалить выбранную шкалу?", ButtonType.YES, ButtonType.NO);
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
                 confirm.setHeaderText("Подтверждение удаления");
                 confirm.showAndWait().ifPresent(btn -> {
                     if (btn == ButtonType.YES) {
@@ -116,8 +121,15 @@ public abstract class BaseTab<T> {
         return spacer;
     }
 
-    protected HBox getButtons() {
-        HBox buttons = new HBox(10, getAddButton(), getEditButton(), getDeleteButton(), getSpacer(), getRefreshButton());
+    protected HBox getButtons(String message) {
+        HBox buttons = new HBox(10, getAddButton(), getEditButton(), getDeleteButton(message), getSpacer(), getRefreshButton());
+        buttons.setAlignment(Pos.CENTER_LEFT);
+        buttons.setPadding(new Insets(0, 0, 10, 0));
+        return buttons;
+    }
+
+    protected HBox getRefreshAsButtons() {
+        HBox buttons = new HBox(10, getRefreshButton());
         buttons.setAlignment(Pos.CENTER_LEFT);
         buttons.setPadding(new Insets(0, 0, 10, 0));
         return buttons;

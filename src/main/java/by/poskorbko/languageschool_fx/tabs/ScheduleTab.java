@@ -1,6 +1,7 @@
 package by.poskorbko.languageschool_fx.tabs;
 
 import by.poskorbko.languageschool_fx.dto.GroupDTO;
+import by.poskorbko.languageschool_fx.dto.Role;
 import by.poskorbko.languageschool_fx.dto.ScheduleDTO;
 import by.poskorbko.languageschool_fx.dto.ScheduleToPost;
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
@@ -12,6 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -20,6 +22,7 @@ import javafx.scene.layout.VBox;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class ScheduleTab extends BaseTab<ScheduleDTO> {
@@ -31,7 +34,7 @@ public class ScheduleTab extends BaseTab<ScheduleDTO> {
         super(BASE_PATH);
     }
 
-    public VBox createScheduleTable() {
+    public VBox createScheduleTable(Set<Role> roles) {
         TableView<ScheduleDTO> table = getTable();
 
         TableColumn<ScheduleDTO, String> groupCol = new TableColumn<>("Группа");
@@ -56,7 +59,14 @@ public class ScheduleTab extends BaseTab<ScheduleDTO> {
 
         table.getColumns().addAll(groupCol, languageCol, levelCol, teacherCol, dayCol, timeCol);
 
-        VBox vbox = new VBox(8, getButtons(), table);
+        String deleteMessage = "Удалить расписание?";
+        Node[] buttons;
+        if (roles.contains(Role.ADMIN)) {
+            buttons = new Node[]{getButtons(deleteMessage), table};
+        } else {
+            buttons = new Node[]{getRefreshAsButtons(), table};
+        }
+        VBox vbox = new VBox(8, buttons);
         VBox.setVgrow(table, Priority.ALWAYS);
         vbox.setPadding(new Insets(10));
 

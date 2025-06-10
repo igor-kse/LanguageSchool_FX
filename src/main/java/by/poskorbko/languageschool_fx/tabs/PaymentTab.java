@@ -1,6 +1,7 @@
 package by.poskorbko.languageschool_fx.tabs;
 
 import by.poskorbko.languageschool_fx.dto.PaymentDTO;
+import by.poskorbko.languageschool_fx.dto.Role;
 import by.poskorbko.languageschool_fx.dto.UserDTO;
 import by.poskorbko.languageschool_fx.http.CrudRestClient;
 import by.poskorbko.languageschool_fx.util.JsonObjectMapper;
@@ -11,6 +12,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -19,6 +21,7 @@ import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class PaymentTab extends BaseTab<PaymentDTO> {
@@ -30,7 +33,7 @@ public class PaymentTab extends BaseTab<PaymentDTO> {
         super(BASE_PATH);
     }
 
-    public VBox createPaymentsTable() {
+    public VBox createPaymentsTable(Set<Role> roles) {
         TableView<PaymentDTO> table = getTable();
 
         TableColumn<PaymentDTO, String> userCol = new TableColumn<>("Плательщик");
@@ -55,12 +58,18 @@ public class PaymentTab extends BaseTab<PaymentDTO> {
 
         table.getColumns().addAll(userCol, amountCol, dateCol, descCol);
 
-        VBox vbox = new VBox(8, getButtons(), table);
+        String deleteMessage = "Удалить платёж?";
+        Node[] buttons;
+        if (roles.contains(Role.ADMIN)) {
+            buttons = new Node[]{getButtons(deleteMessage), table};
+        } else {
+            buttons = new Node[]{getRefreshAsButtons(), table};
+        }
+        VBox vbox = new VBox(8, buttons);
         VBox.setVgrow(table, Priority.ALWAYS);
         vbox.setPadding(new Insets(10));
 
         getRefreshButton().fire();
-
         return vbox;
     }
 
